@@ -1,12 +1,7 @@
-import htmlButtonResponse from '@jspsych/plugin-html-button-response'
-import surveyMultiselect from '@jspsych/plugin-survey-multi-select'
-import { lang, config } from "../config/main";
-import {
-  survey,
-  slider,
-  multiSurvey,
-  showMessage,
-} from "@brown-ccv/behavioral-task-trials";
+import htmlButtonResponse from '@jspsych/plugin-html-button-response';
+import surveyMultiselect from '@jspsych/plugin-survey-multi-select';
+import { lang, config } from '../config/main';
+import { survey, slider, multiSurvey, showMessage } from '@brown-ccv/behavioral-task-trials';
 
 // Age Check
 const ask = lang.quiz.ask.age;
@@ -91,10 +86,7 @@ const demoMultiChoiceOptions = {
     `${lang.quiz.answer.demographics_race.native_hawaiian_pacific_islander}`,
     `${lang.quiz.answer.demographics_race.other}`,
   ],
-  yesNo: [
-    lang.quiz.answer.demographics_binary.yes,
-    lang.quiz.answer.demographics_binary.no,
-  ],
+  yesNo: [lang.quiz.answer.demographics_binary.yes, lang.quiz.answer.demographics_binary.no],
   gender: [
     lang.quiz.answer.demographics_gender.female,
     lang.quiz.answer.demographics_gender.male,

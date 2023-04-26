@@ -1,16 +1,18 @@
-import React, { useEffect, useRef, useMemo } from "react";
-import { initJsPsych } from 'jspsych'
-import { jsPsychOptions, buildTimeline } from "../timelines/main";
+import { initJsPsych } from 'jspsych';
+import React, { useEffect, useMemo, useRef } from 'react';
+
+import { config } from '../config/main';
+import { initParticipant } from '../firebase';
+import { buildTimeline, jsPsychOptions } from '../timelines/main';
 
 function JsPsychExperiment({
   participantId,
   studyId,
-  startDate,
   taskVersion,
   dataUpdateFunction,
   dataFinishFunction,
-  height = "100%",
-  width = "100%"
+  height = '100%',
+  width = '100%',
 }) {
   // This will be the div in the dom that holds the experiment.
   // We reference it explicitly here so we can do some plumbing with react, jspsych, and events.
@@ -25,54 +27,60 @@ function JsPsychExperiment({
     on_finish: (data) => dataFinishFunction(data),
   };
 
-  // Create the instance of jsPsych that we'll reuse within the scoope of this JsPsychExperiment component.
+  // Create the instance of jsPsych that we'll reuse within the scope of this JsPsychExperiment component.
   // As of jspsych 7, we create our own jspsych instance(s) where needed instead of importing one global instance.
-  const setUpJsPsych = () => {
-    const jsPsych = initJsPsych(combinedOptions)
+  const jsPsych = useMemo(() => {
+    // Start date of the experiment - used as the UID
+    // TODO 169: JsPsych has a built in timestamp function
+    const startDate = new Date().toISOString();
+
+    // Write the initial record to Firestore
+    if (config.USE_FIREBASE) initParticipant(participantId, studyId, startDate);
+
+    const jsPsych = initJsPsych(combinedOptions);
+    // Add experiment properties into jsPsych directly
     jsPsych.data.addProperties({
       participant_id: participantId,
       study_id: studyId,
       start_date: startDate,
-      task_version: taskVersion
-    })
-    return jsPsych
-  }
-  const jsPsych = useMemo(setUpJsPsych, [participantId, studyId, startDate, taskVersion]);
+      task_version: taskVersion,
+    });
+    return jsPsych;
+  }, [participantId, studyId, taskVersion]);
 
   // Build our jspsych experiment timeline (in this case a Honeycomb demo, you could substitute your own here).
-  const timeline = buildTimeline(jsPsych)
+  const timeline = buildTimeline(jsPsych);
 
   // Set up event and lifecycle callbacks to start and stop jspsych.
-  // Inspration from jspsych-react: https://github.com/makebrainwaves/jspsych-react/blob/master/src/index.js
-  const handleKeyEvent = e => {
-    if (e.redispatched) {
-      return;
-    }
-    let new_event = new e.constructor(e.type, e);
-    new_event.redispatched = true;
-    experimentDiv.current.dispatchEvent(new_event);
+  // Inspiration from jspsych-react: https://github.com/makebrainwaves/jspsych-react/blob/master/src/index.js
+  const handleKeyEvent = (e) => {
+    if (e.redispatched) return;
+
+    const newEvent = new e.constructor(e.type, e);
+    newEvent.redispatched = true;
+    experimentDiv.current.dispatchEvent(newEvent);
   };
 
   // These useEffect callbacks are similar to componentDidMount / componentWillUnmount.
   // If necessary, useLayoutEffect callbacks might be even more similar.
   useEffect(() => {
-    window.addEventListener("keyup", handleKeyEvent, true);
-    window.addEventListener("keydown", handleKeyEvent, true);
+    window.addEventListener('keyup', handleKeyEvent, true);
+    window.addEventListener('keydown', handleKeyEvent, true);
     jsPsych.run(timeline);
 
     return () => {
-      window.removeEventListener("keyup", handleKeyEvent, true);
-      window.removeEventListener("keydown", handleKeyEvent, true);
+      window.removeEventListener('keyup', handleKeyEvent, true);
+      window.removeEventListener('keydown', handleKeyEvent, true);
       try {
-        jsPsych.endExperiment("Ended Experiment");
+        jsPsych.endExperiment('Ended Experiment');
       } catch (e) {
-        console.error("Experiment closed before unmount");
+        console.error('Experiment closed before unmount');
       }
     };
   });
 
   return (
-    <div className="App">
+    <div className='App'>
       <div id={experimentDivId} style={{ height, width }} ref={experimentDiv} />
     </div>
   );
