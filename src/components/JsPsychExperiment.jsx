@@ -2,9 +2,10 @@ import { initJsPsych } from 'jspsych';
 import React, { useEffect, useMemo } from 'react';
 
 import { config } from '../config/main';
-import { initParticipant } from '../firebase';
+import { initParticipant, firestoreConfig, addConfigToFirebase } from '../firebase';
 import { buildTimeline } from '../timelines/main';
 
+import settings from '../config/settings.json';
 import minionImg from '../assets/images/minion.png';
 import overlordImg from '../assets/images/overlord.png';
 import explosionGif from '../assets/images/explosion.gif';
@@ -28,13 +29,13 @@ function JsPsychExperiment({
     on_finish: (data) => dataFinishFunction(data),
   };
 
+  // Start date of the experiment - used as the UID
+  // TODO 169: JsPsych has a built in timestamp function
+  const startDate = new Date().toISOString();
+
   // Create the instance of jsPsych that we'll reuse within the scope of this JsPsychExperiment component.
   // As of jspsych 7, we create our own jspsych instance(s) where needed instead of importing one global instance.
   const jsPsych = useMemo(() => {
-    // Start date of the experiment - used as the UID
-    // TODO 169: JsPsych has a built in timestamp function
-    const startDate = new Date().toISOString();
-
     // Write the initial record to Firestore
     if (config.USE_FIREBASE) initParticipant(participantId, studyId, startDate);
 
@@ -62,10 +63,21 @@ function JsPsychExperiment({
 
   // These useEffect callbacks are similar to componentDidMount / componentWillUnmount.
   // If necessary, useLayoutEffect callbacks might be even more similar.
-  useEffect(() => {
+  useEffect(async () => {
     window.addEventListener('keyup', handleKeyEvent, true);
     window.addEventListener('keydown', handleKeyEvent, true);
-    const timeline = buildTimeline(jsPsych);
+
+    let tlConfig;
+    if (config.USE_FIREBASE) {
+      tlConfig = await firestoreConfig(studyId, participantId);
+      if (!tlConfig) {
+        tlConfig = settings;
+      }
+    }
+
+    addConfigToFirebase(participantId, studyId, startDate, tlConfig);
+
+    const timeline = buildTimeline(jsPsych, tlConfig);
     jsPsych.run(timeline);
 
     return () => {

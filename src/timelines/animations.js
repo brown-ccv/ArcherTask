@@ -1,12 +1,11 @@
 import anime from 'animejs/lib/anime.es.js';
-import settings from '../config/settings';
 import { getResponseTop, getTargetTop } from './utils';
 
 import minionImg from '../assets/images/minion.png';
 import overlordImg from '../assets/images/overlord.png';
 import explosionGif from '../assets/images/explosion.gif';
 
-function getTimeline(jspsych, isOverlord, isHit) {
+function getTimeline(jspsych, isOverlord, isHit, settings) {
   const enemyID = isOverlord ? '#overlord' : '#minion';
   const arrow = document.getElementById('arrow');
   const enemy = document.getElementById(isOverlord ? 'overlord' : 'minion');
@@ -71,7 +70,9 @@ function getTimeline(jspsych, isOverlord, isHit) {
 
 // Resets the animation to the initial location
 // and hides all elements
-const animationReset = (jspsych, data) => {
+const animationReset = (jspsych, data, settings) => {
+  const { arrowSize, minionSize, overlordSize } = settings.interface;
+
   const arrow = document.getElementById('arrow');
   const minion = document.getElementById('minion');
   const overlord = document.getElementById('overlord');
@@ -92,13 +93,13 @@ const animationReset = (jspsych, data) => {
   // Get the user selected archer value and the generated targetValue
   all.forEach((e) => (e.style.visibility = 'hidden'));
 
-  arrow.style.top = getResponseTop(archerValue) + 'px';
+  arrow.style.top = getResponseTop(archerValue, arrowSize) + 'px';
   arrow.style.left = '125px';
 
-  minion.style.top = getTargetTop(targetValue, false) - 6 + 'px';
+  minion.style.top = getTargetTop(targetValue, false, minionSize, overlordSize) - 6 + 'px';
   minion.style.left = '1000px';
 
-  overlord.style.top = getTargetTop(targetValue, true) + 'px';
+  overlord.style.top = getTargetTop(targetValue, true, minionSize, overlordSize) + 'px';
   overlord.style.left = '1000px';
 
   minion.firstElementChild.src = minionImg;
@@ -108,13 +109,13 @@ const animationReset = (jspsych, data) => {
 };
 
 // Plays the animation
-const playAnimation = (jspsych, isOverlord, isHit) => {
+const playAnimation = (jspsych, isOverlord, isHit, settings) => {
   const arrow = document.getElementById('arrow');
   const minion = document.getElementById('minion');
   const overlord = document.getElementById('overlord');
   const enemy = isOverlord ? overlord : minion;
 
-  const timeline = getTimeline(jspsych, isOverlord, isHit);
+  const timeline = getTimeline(jspsych, isOverlord, isHit, settings);
 
   setTimeout(() => {
     arrow.style.visibility = 'visible';

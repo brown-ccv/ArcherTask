@@ -1,6 +1,5 @@
 // This code is taken from
 // https://gist.github.com/bluesmoon/7925696
-import settings from '../config/settings';
 
 let spareRandom = null;
 
@@ -35,11 +34,11 @@ function normalRandomScaled(mean, stddev) {
   return Math.round(r);
 }
 
-function normalRandomInRange(mean, stdev) {
+function normalRandomInRange(mean, stdev, min, max) {
   let val;
   do {
     val = normalRandomScaled(mean, stdev);
-  } while (val < settings.slider.min || val > settings.slider.max);
+  } while (val < min || val > max);
 
   return val;
 }

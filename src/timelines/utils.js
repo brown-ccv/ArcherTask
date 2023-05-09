@@ -1,7 +1,3 @@
-import settings from '../config/settings';
-
-const { arrowSize, minionSize, overlordSize } = settings.interface;
-
 // Performs integer division
 function intDiv(a, b) {
   return Math.floor(a / b);
@@ -19,19 +15,19 @@ function sliderToPixel(sliderValue) {
 }
 
 // Gets the top location of the response
-function getResponseTop(response) {
+function getResponseTop(response, arrowSize) {
   return sliderToPixel(response) - intDiv(arrowSize, 2);
 }
 
 // Gets the top location of the target
-function getTargetTop(targetValue, isOverlord) {
+function getTargetTop(targetValue, isOverlord, minionSize, overlordSize) {
   return (
     sliderToPixel(targetValue) - (isOverlord ? intDiv(overlordSize, 2) : intDiv(minionSize, 2))
   );
 }
 
 // Determines if the arrow is colliding with the target
-function isCollision(responseTop, targetTop, isOverlord) {
+function isCollision(responseTop, targetTop, isOverlord, arrowSize, minionSize, overlordSize) {
   const height = isOverlord ? overlordSize : minionSize;
 
   return responseTop > targetTop - arrowSize && responseTop < targetTop + height;
@@ -40,11 +36,11 @@ function isCollision(responseTop, targetTop, isOverlord) {
 // Determines if there was a hit
 // Makes use of the 3 functions above
 // The functions are separate to make unit tests easier
-function isHit(response, targetValue, isOverlord) {
-  const responseTop = getResponseTop(response);
-  const targetTop = getTargetTop(targetValue, isOverlord);
+function isHit(response, targetValue, isOverlord, arrowSize, minionSize, overlordSize) {
+  const responseTop = getResponseTop(response, arrowSize);
+  const targetTop = getTargetTop(targetValue, isOverlord, minionSize, overlordSize);
 
-  return isCollision(responseTop, targetTop, isOverlord);
+  return isCollision(responseTop, targetTop, isOverlord, arrowSize, minionSize, overlordSize);
 }
 
 // Handles click space event

@@ -24,7 +24,8 @@ function createSlider(
   waveNumber,
   maxWave,
   showStatusMessage,
-  showRunButton
+  showRunButton,
+  settings
 ) {
   let runPressed = false;
 
@@ -94,7 +95,7 @@ function createSlider(
     if (onFinish) onFinish(data);
 
     // Resets the animations
-    animationReset(jspsych, data);
+    animationReset(jspsych, data, settings);
 
     // For feedback types, end the current wave after a hit
     // Also ends the wave if run button is pressed

@@ -4,6 +4,8 @@ import 'firebase/compat/firestore';
 // TODO: Upgrade to modular SDK instead of compat
 
 // Initialize Firebase and Firestore
+const RESPONSE_COLLECTION_NAME = 'participant_responses';
+const REGISTERED_COLLECTION_NAME = 'registered_studies';
 firebase.initializeApp({
   apiKey: process.env.REACT_APP_apiKey,
   authDomain: process.env.REACT_APP_authDomain,
@@ -22,7 +24,7 @@ if (window.location.hostname === 'localhost') db.useEmulator('localhost', 8080);
 // Get a reference to the Firebase document at
 // "/participant_responses/{studyID}/participants/{participantID}"
 const getParticipantRef = (studyID, participantID) =>
-  db.doc(`/participant_responses/${studyID}/participants/${participantID}`);
+  db.doc(`/${RESPONSE_COLLECTION_NAME}/${studyID}/participants/${participantID}`);
 
 // Get a reference to the Firebase document at
 // "/participant_responses/{studyID}/participants/{participantID}/data/{startDate}"
@@ -74,6 +76,53 @@ async function initParticipant(participantID, studyID, startDate) {
   }
 }
 
+const getFirestoreConfig = (studyID, docName) => {
+  return db
+    .collection(REGISTERED_COLLECTION_NAME)
+    .doc(studyID)
+    .collection('config')
+    .doc(docName)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        return JSON.parse(doc.data().config);
+      } else {
+        console.log(`Document ${docName} does not exist`);
+        return false;
+      }
+    })
+    .catch((error) => console.log('Error in getting config:', error));
+};
+
+/**
+ * Gets the config object for the logged-in participant, or uses the default for the study. The config object
+ * is a string.
+ * @param {string} studyID The study ID specified at login.
+ * @param {string} participantID The logged in participant ID.
+ */
+const firestoreConfig = async (studyID, participantID) => {
+  const pConfig = await getFirestoreConfig(studyID, participantID);
+  const defaultConfig = await getFirestoreConfig(studyID, 'default');
+  if (pConfig) {
+    return pConfig;
+  } else if (defaultConfig) {
+    return defaultConfig;
+  } else {
+    return false;
+  }
+};
+
+const addConfigToFirebase = (participantID, studyID, startDate, config) => {
+  console.log('Adding config to Firebase');
+  db.collection(RESPONSE_COLLECTION_NAME)
+    .doc(studyID)
+    .collection('participants')
+    .doc(participantID)
+    .collection('data')
+    .doc(startDate)
+    .update({ config: config });
+};
+
 /**
  * Adds a JsPsych trial to Firebase.
  * Each trial is its own document in the "trials" subcollection
@@ -95,5 +144,13 @@ async function addToFirebase(data) {
   }
 }
 
-export { db, getExperimentRef, validateParticipant, initParticipant, addToFirebase };
+export {
+  db,
+  getExperimentRef,
+  validateParticipant,
+  initParticipant,
+  addToFirebase,
+  firestoreConfig,
+  addConfigToFirebase,
+};
 export default firebase;

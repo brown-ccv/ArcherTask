@@ -1,6 +1,5 @@
 import createSlider from './slider';
 import jsPsychHtmlKeyboardResponse from '@jspsych/plugin-html-keyboard-response';
-import settings from '../config/settings';
 import { normalRandomInRange } from './random';
 import { isHit, pressSpace, getArcher } from './utils';
 import { playAnimation } from './animations';
@@ -18,7 +17,8 @@ function createSection(
   waveStimulus,
   waveStimulusDuration,
   sectionStimulus,
-  sectionStimulusDuration
+  sectionStimulusDuration,
+  settings
 ) {
   // A section consists of:
   // Section prompt: Shows only once at the beginning of the section
@@ -89,9 +89,18 @@ function createSection(
     }
 
     function responseOnFinish(data) {
+      const { arrowSize, minionSize, overlordSize } = settings.interface;
+      const { min, max } = settings.slider;
       if (data.type && data.type !== 'practice1') setRunButtonState(true);
-      data.targetValue = normalRandomInRange(data.mean, data.sd);
-      data.hit = isHit(data.response, data.targetValue, type === 'overlord');
+      data.targetValue = normalRandomInRange(data.mean, data.sd, min, max);
+      data.hit = isHit(
+        data.response,
+        data.targetValue,
+        type === 'overlord',
+        arrowSize,
+        minionSize,
+        overlordSize
+      );
       let events = getInputs();
       if (events && events.length > settings.data.maxEvents) {
         events = events.slice(500);
@@ -103,7 +112,7 @@ function createSection(
     function feedbackOnLoad() {
       disableEventLogging();
       const isHit = jspsych.data.getLastTrialData().trials[0].hit;
-      playAnimation(jspsych, isOverlord, isHit);
+      playAnimation(jspsych, isOverlord, isHit, settings);
     }
 
     function feedbackOnFinish(data) {
@@ -126,7 +135,8 @@ function createSection(
       waveNumber,
       maxWave,
       showStatusMessage,
-      getRunButtonState
+      getRunButtonState,
+      settings
     );
 
     let feedback = createSlider(
@@ -143,7 +153,8 @@ function createSection(
       waveNumber,
       maxWave,
       showStatusMessage,
-      getRunButtonState
+      getRunButtonState,
+      settings
     );
 
     // The trial for the prompt of each wave
@@ -181,7 +192,8 @@ function createSection(
 
   // A section is just its prompt and maxWave number of waves
   let waves = Array.from({ length: maxWave }, (_, i) => {
-    return createWave(normalRandomInRange(grand_mean, grand_sd), sd, type, i);
+    const { min, max } = settings.slider;
+    return createWave(normalRandomInRange(grand_mean, grand_sd, min, max), sd, type, i);
   });
 
   return {
