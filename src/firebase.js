@@ -22,7 +22,7 @@ if (window.location.hostname === 'localhost') db.useEmulator('localhost', 8080);
 // Get a reference to the Firebase document at
 // "/participant_responses/{studyID}/participants/{participantID}"
 const getParticipantRef = (studyID, participantID) =>
-  db.doc(`participant_responses/${studyID}/participants/${participantID}`);
+  db.doc(`/participant_responses/${studyID}/participants/${participantID}`);
 
 // Get a reference to the Firebase document at
 // "/participant_responses/{studyID}/participants/{participantID}/data/{startDate}"
@@ -84,11 +84,14 @@ async function addToFirebase(data) {
   const participantID = data.participant_id;
   const startDate = data.start_date;
 
-  try {
-    const experiment = getExperimentRef(studyID, participantID, startDate);
-    await experiment.collection('trials').add(data);
-  } catch (error) {
-    console.error('Unable to add trial:\n', error);
+  if (data.type === 'minion' || data.type === 'overlord') {
+    console.log(data);
+    try {
+      const experiment = getExperimentRef(studyID, participantID, startDate);
+      await experiment.collection('trials').add(data);
+    } catch (error) {
+      console.error('Unable to add trial:\n', error);
+    }
   }
 }
 

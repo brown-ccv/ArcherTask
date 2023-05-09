@@ -29,6 +29,9 @@ psiturkit/*_turk
 .DS_Store
 .gitignore
 
+# One typescript file
+src/timelines/archer.ts
+
 # File types
 # TODO: Only running on js and jsx anyways?
 # *.md

@@ -1,12 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@500&display=swap");
+
 p, li {
   font-size: 1.5rem;
-}
-html, body, #root, .App {
-  text-align: center;
-  margin: 0;
-  min-height: 100vh;
-  height: 100% !important;
-  width: 100vw !important;
 }
 
 .centered-h-v {
@@ -65,12 +60,176 @@ html, body, #root, .App {
   border-radius: 50%;
 }
 
-.jspsych-btn {
-  padding: 0.5rem 1rem;
-  font-weight: bold;
-  border-radius: 5px;
-  box-shadow: 5px 5px 5px #efefef;
-  background-color: #d3d3d3;
-  margin: 1rem;
-  width: 10rem !important;
+:root {
+  --bs-body-font-family: "Roboto Slab", Roboto, serif;
+  --bs-body-font-size: 1.2rem;
+  --bs-body-font-weight: 500;
+}
+
+body {
+  background-color: #a3cfbb;
+}
+
+#jspsych-container {
+  position: relative;
+  width: 1050px;
+  height: 650px;
+  margin: auto;
+  border: none;
+  padding: 25px;
+}
+
+.jspsych-content {
+  height: 600px;
+  text-align: center;
+  background-color: var(--bs-green);
+  border-radius: 25px;
+  border: none;
+  color: white;
+}
+
+#jspsych-main:focus-visible {
+  outline: none;
+}
+
+#jspsych-html-keyboard-response-stimulus {
+  padding-top: 100px;
+}
+
+#top-bar {
+  width: 100%;
+  height: 100px;
+  top: 0px;
+  display: flex;
+  justify-content: space-between;
+}
+
+#jspsych-html-slider-response-next {
+  display: none;
+}
+
+.jspsych-content p:first-of-type {
+  padding-top: 150px;
+}
+
+.jspsych-slider {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 500px;
+  height: 10px;
+  border: 0px;
+  padding: 0;
+  margin: 0;
+  z-index: 100;
+
+  -webkit-transform: translate(-175px, 350px) rotate(270deg);
+  -moz-transform: translate(-175px, 350px) rotate(270deg);
+  transform: translate(-175px, 350px) rotate(270deg);
+
+  background: none;
+  outline: none;
+  pointer-events: none;
+}
+
+.jspsych-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100px;
+  height: 100px;
+  border: 0;
+  background-image: url("./assets/images/archer.png");
+  background-color: transparent;
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  transform: rotate(90deg);
+  pointer-events: all;
+}
+
+.jspsych-slider::-moz-range-thumb {
+  width: 100px;
+  height: 100px;
+  border: 0;
+  background-image: url("./assets/images/archer.png");
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+
+.jspsych-instructions-nav {
+  margin-top: 3rem;
+}
+
+#arrow {
+  visibility: hidden;
+  position: absolute;
+  z-index: 101;
+  left: 125px;
+  background: black;
+  width: 10px;
+  height: 3px;
+}
+
+#minion {
+  visibility: hidden;
+  position: absolute;
+  z-index: 102;
+  left: 1000px;
+  width: 13px;
+  height: 13px;
+}
+
+#minion img {
+  width: 13px;
+  height: 13px;
+  filter: invert(1);
+}
+
+#overlord {
+  visibility: hidden;
+  position: absolute;
+  z-index: 102;
+  left: 1000px;
+  width: 17px;
+  height: 17px;
+}
+
+#overlord img {
+  width: 17px;
+  height: 17px;
+  filter: invert(1);
+}
+
+#explosion {
+  visibility: hidden;
+}
+
+#run-button {
+  font-size: 1.5rem;
+  margin-left: 1.5rem;
+  color: var(--bs-green);
+}
+
+#status {
+  color: white;
+}
+
+/* This is a hack that ensures the background image is preloaded */
+body::after {
+  visibility: hidden;
+  position: absolute;
+  z-index: -10;
+  content: url("./assets/images/archer.png");
 }

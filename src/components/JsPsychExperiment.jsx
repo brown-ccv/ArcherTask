@@ -1,9 +1,13 @@
 import { initJsPsych } from 'jspsych';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 import { config } from '../config/main';
 import { initParticipant } from '../firebase';
-import { buildTimeline, jsPsychOptions } from '../timelines/main';
+import { buildTimeline } from '../timelines/main';
+
+import minionImg from '../assets/images/minion.png';
+import overlordImg from '../assets/images/overlord.png';
+import explosionGif from '../assets/images/explosion.gif';
 
 function JsPsychExperiment({
   participantId,
@@ -11,18 +15,15 @@ function JsPsychExperiment({
   taskVersion,
   dataUpdateFunction,
   dataFinishFunction,
-  height = '100%',
-  width = '100%',
 }) {
   // This will be the div in the dom that holds the experiment.
   // We reference it explicitly here so we can do some plumbing with react, jspsych, and events.
-  const experimentDivId = 'experimentWindow';
-  const experimentDiv = useRef(null);
+  const experimentDivId = 'jspsych-main';
 
-  // Combine custom options imported from timelines/maine.js, with necessary Honeycomb options.
+  // Combine custom options imported from timelines/main.js, with necessary Honeycomb options.
   const combinedOptions = {
-    ...jsPsychOptions,
     display_element: experimentDivId,
+    experiment_width: 1000,
     on_data_update: (data) => dataUpdateFunction(data),
     on_finish: (data) => dataFinishFunction(data),
   };
@@ -48,9 +49,6 @@ function JsPsychExperiment({
     return jsPsych;
   }, [participantId, studyId, taskVersion]);
 
-  // Build our jspsych experiment timeline (in this case a Honeycomb demo, you could substitute your own here).
-  const timeline = buildTimeline(jsPsych);
-
   // Set up event and lifecycle callbacks to start and stop jspsych.
   // Inspiration from jspsych-react: https://github.com/makebrainwaves/jspsych-react/blob/master/src/index.js
   const handleKeyEvent = (e) => {
@@ -58,7 +56,8 @@ function JsPsychExperiment({
 
     const newEvent = new e.constructor(e.type, e);
     newEvent.redispatched = true;
-    experimentDiv.current.dispatchEvent(newEvent);
+    const experimentDiv = document.getElementById('jspsych-content');
+    experimentDiv.dispatchEvent(newEvent);
   };
 
   // These useEffect callbacks are similar to componentDidMount / componentWillUnmount.
@@ -66,6 +65,7 @@ function JsPsychExperiment({
   useEffect(() => {
     window.addEventListener('keyup', handleKeyEvent, true);
     window.addEventListener('keydown', handleKeyEvent, true);
+    const timeline = buildTimeline(jsPsych);
     jsPsych.run(timeline);
 
     return () => {
@@ -80,8 +80,18 @@ function JsPsychExperiment({
   });
 
   return (
-    <div className='App'>
-      <div id={experimentDivId} style={{ height, width }} ref={experimentDiv} />
+    <div id='jspsych-container' className='rounded-5 bg-white mt-5 shadow-sm'>
+      <div id='jspsych-main'></div>
+      <div id='arrow'></div>
+      <div id='minion'>
+        <img src={minionImg} width='13px' height='13px' />
+      </div>
+      <div id='overlord'>
+        <img src={overlordImg} width='17px' height='17px' />
+      </div>
+      <div id='explosion'>
+        <img src={explosionGif} width='0px' height='0px' />
+      </div>
     </div>
   );
 }
