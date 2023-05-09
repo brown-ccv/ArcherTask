@@ -106,7 +106,7 @@ class HtmlSliderResponsePlugin implements JsPsychPlugin<Info> {
     var half_thumb_width = 7.5;
 
     var html = '<div id="jspsych-html-slider-response-wrapper">';
-    html += '<div id="jspsych-html-slider-response-stimulus">' + trial.stimulus + '</div>';
+    html += `<div id="jspsych-html-slider-response-stimulus">${trial.stimulus}</div>`;
     html += '<div class="jspsych-html-slider-response-container" style="';
     if (trial.slider_width !== null) {
       html += 'width:' + trial.slider_width + 'px;';
