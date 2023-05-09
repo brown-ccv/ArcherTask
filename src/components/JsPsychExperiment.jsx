@@ -50,23 +50,9 @@ function JsPsychExperiment({
     return jsPsych;
   }, [participantId, studyId, taskVersion]);
 
-  // Set up event and lifecycle callbacks to start and stop jspsych.
-  // Inspiration from jspsych-react: https://github.com/makebrainwaves/jspsych-react/blob/master/src/index.js
-  const handleKeyEvent = (e) => {
-    if (e.redispatched) return;
-
-    const newEvent = new e.constructor(e.type, e);
-    newEvent.redispatched = true;
-    const experimentDiv = document.getElementById('jspsych-content');
-    experimentDiv.dispatchEvent(newEvent);
-  };
-
   // These useEffect callbacks are similar to componentDidMount / componentWillUnmount.
   // If necessary, useLayoutEffect callbacks might be even more similar.
   useEffect(async () => {
-    window.addEventListener('keyup', handleKeyEvent, true);
-    window.addEventListener('keydown', handleKeyEvent, true);
-
     let tlConfig;
     if (config.USE_FIREBASE) {
       tlConfig = await firestoreConfig(studyId, participantId);
@@ -81,8 +67,6 @@ function JsPsychExperiment({
     jsPsych.run(timeline);
 
     return () => {
-      window.removeEventListener('keyup', handleKeyEvent, true);
-      window.removeEventListener('keydown', handleKeyEvent, true);
       try {
         jsPsych.endExperiment('Ended Experiment');
       } catch (e) {

@@ -1,7 +1,6 @@
 import createSlider from './slider';
 import jsPsychHtmlKeyboardResponse from '@jspsych/plugin-html-keyboard-response';
-import { normalRandomInRange } from './random';
-import { isHit, pressSpace, getArcher } from './utils';
+import { isHit, pressSpace, getArcher, normalRandomInRange } from './utils';
 import { playAnimation } from './animations';
 
 function createSection(

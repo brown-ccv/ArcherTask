@@ -1,3 +1,10 @@
+/*
+NOTE:
+
+This file is directly taken from the official JsPsych HTMLSliderResponse plugin
+with minimal changes to remove default CSS for easy customization.
+*/
+
 import { JsPsych, JsPsychPlugin, ParameterType, TrialType } from 'jspsych';
 
 const info = <const>{

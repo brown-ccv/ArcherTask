@@ -34,3 +34,4 @@ public/config/version.json
 .env
 .DS_Store
 psiturkit/*_turk
+.firebase
