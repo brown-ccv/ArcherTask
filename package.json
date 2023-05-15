@@ -79,6 +79,7 @@
     "firebase:emulators:start": "firebase emulators:start --import emulator_data",
     "firebase:emulators:save": "firebase emulators:export emulator_data",
     "firebase:download": "dotenv -e env/.env.firebase-download node download-response-data.js",
+    "firebase:upload": "dotenv -e env/.env.firebase-download node upload-config-to-firebase.js",
     "start": "cross-env BROWSER=\"none\" NODE_PATH=\"./src\" IMAGE_INLINE_SIZE_LIMIT=0 react-scripts start",
     "start:browser": "cross-env IMAGE_INLINE_SIZE_LIMIT=0 react-scripts start",
     "dev": "concurrently -k npm:start npm:electron-dev",

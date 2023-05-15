@@ -66,9 +66,7 @@ function createSlider(
     }
 
     // Determines whether a status message should be shown.
-    if (showStatusMessage) {
-      setStatusMessage();
-    }
+    if (showStatusMessage) setStatusMessage();
 
     let archer = getArcher();
 

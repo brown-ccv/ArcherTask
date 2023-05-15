@@ -87,12 +87,24 @@ if (studyID === undefined || participantID === undefined) {
   );
 }
 
+let firebaseCredential;
+try {
+  firebaseCredential = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+} catch (err) {
+  console.error(
+    'Unable to locate firebase credential specified in .env.firebase-download, using "firebase-service-account.json" in your repo instead'
+  );
+}
+
 // Initialize Firestore
 let db;
 try {
+  firebaseCredential = firebaseCredential
+    ? firebaseCredential
+    : require('./firebase-service-account.json');
   db = firebase
     .initializeApp({
-      credential: firebase.credential.cert(require('./firebase-service-account.json')),
+      credential: firebase.credential.cert(firebaseCredential),
     })
     .firestore();
 } catch (error) {
