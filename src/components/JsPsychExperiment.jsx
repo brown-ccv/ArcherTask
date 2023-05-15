@@ -73,7 +73,7 @@ function JsPsychExperiment({
         console.error('Experiment closed before unmount');
       }
     };
-  });
+  }, []);
 
   return (
     <div id='jspsych-container' className='rounded-5 bg-white mt-5 shadow-sm'>
