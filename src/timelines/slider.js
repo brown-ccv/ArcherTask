@@ -22,8 +22,8 @@ function createSlider(
   setArrows,
   maxArrows,
   waveNumber,
-  maxWave,
-  showStatusMessage,
+  maxWaves,
+  showStatus,
   showRunButton,
   settings
 ) {
@@ -66,7 +66,7 @@ function createSlider(
     }
 
     // Determines whether a status message should be shown.
-    if (showStatusMessage) setStatusMessage();
+    if (showStatus) setStatusMessage();
 
     let archer = getArcher();
 
@@ -107,7 +107,7 @@ function createSlider(
 
     let status = document.getElementById('status');
     status.innerHTML = `Arrows left: ${arrowsLeft}/${maxArrows}<br />
-      Current wave: ${waveNumber + 1}/${maxWave}`;
+      Current wave: ${waveNumber + 1}/${maxWaves}`;
   }
 
   return {
@@ -141,7 +141,7 @@ function createSlider(
       },
       maxArrows,
       waveNumber,
-      maxWave,
+      maxWave: maxWaves,
     },
     on_finish: trialOnFinish,
     on_load: trialOnLoad,

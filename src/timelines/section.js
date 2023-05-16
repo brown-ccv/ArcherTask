@@ -2,23 +2,19 @@ import createSlider from './slider';
 import jsPsychHtmlKeyboardResponse from '@jspsych/plugin-html-keyboard-response';
 import { isHit, handleKeyPress, getArcher, normalRandomInRange } from './utils';
 import { playAnimation } from './animations';
-import { arrowsState, runButtonState, inputsState } from './hooks';
+import { numberState, runButtonState, inputsState } from './hooks';
 
 function createSection(
   jspsych,
-  grand_mean,
-  grand_sd,
-  sd,
+  settings,
+  prompt,
   type,
-  max,
   maxArrows,
-  maxWave,
-  showStatusMessage,
-  waveStimulus,
-  waveStimulusDuration,
-  sectionStimulus,
-  sectionStimulusDuration,
-  settings
+  maxMinions,
+  maxWaves,
+  showStatus,
+  showRunButton,
+  showWaveStimulus
 ) {
   // A section consists of:
   // Section prompt: Shows only once at the beginning of the section
@@ -29,7 +25,10 @@ function createSection(
   // This function mimics useState in React that allows
   // individual trials to get and mutate the number of arrows left.
 
-  const [getArrows, setArrows] = arrowsState(maxArrows);
+  const { grand_mean, grand_sd, sd, max, waveStimulusDuration, sectionStimulusDuration } =
+    settings.common;
+
+  const [getArrows, setArrows] = numberState(maxArrows);
 
   function createWave(mean, sd, type, waveNumber) {
     // The state of whether the run button should be shown is shared in each wave
@@ -39,6 +38,7 @@ function createSection(
 
     // Sets up another state to log events
     const [getInputs, addInputs, resetInputs] = inputsState([]);
+    const [getMinions, setMinions] = numberState(0);
 
     const isOverlord = type === 'overlord';
 
@@ -78,9 +78,8 @@ function createSection(
 
     function responseOnFinish(data) {
       const { arrowSize, minionSize, overlordSize } = settings.interface;
-      const { min, max } = settings.slider;
-      if (data.type && data.type !== 'practice1') setRunButtonState(true);
-      data.targetValue = normalRandomInRange(data.mean, data.sd, min, max);
+      if (showRunButton) setRunButtonState(true);
+      data.targetValue = normalRandomInRange(data.mean, data.sd, 0, max);
       data.hit = isHit(
         data.response,
         data.targetValue,
@@ -106,6 +105,7 @@ function createSection(
     function feedbackOnFinish(data) {
       const lastTrialData = jspsych.data.get().last(2).trials[0];
       data.hit = lastTrialData.hit;
+      setMinions(getMinions() + 1);
     }
 
     // Creates a trial and a feedback respectively
@@ -121,8 +121,8 @@ function createSection(
       setArrows,
       maxArrows,
       waveNumber,
-      maxWave,
-      showStatusMessage,
+      maxWaves,
+      showStatus,
       getRunButtonState,
       settings
     );
@@ -139,11 +139,22 @@ function createSection(
       setArrows,
       maxArrows,
       waveNumber,
-      maxWave,
-      showStatusMessage,
+      maxWaves,
+      showStatus,
       getRunButtonState,
       settings
     );
+
+    // The timeline that loops forever as long as there are still arrows left
+    let loopedTimeline = {
+      timeline: [response, feedback],
+      conditional_function: () => getArrows() > 0 && getMinions() < maxMinions,
+      loop_function: () => getArrows() > 0 && getMinions() < maxMinions,
+    };
+
+    if (!showWaveStimulus) {
+      return loopedTimeline;
+    }
 
     // The trial for the prompt of each wave
     let wavePrompt = {
@@ -153,14 +164,6 @@ function createSection(
       trial_duration: waveStimulusDuration,
     };
 
-    // The timeline that loops forever as long as there are still arrows left
-    let loopedTimeline = {
-      timeline: [response, feedback],
-      loop_function: () => getArrows() > 0,
-      conditional_function: () => getArrows() > 0,
-    };
-
-    // A wave consists of a prompt for the wave and the response-feedback loop
     return {
       timeline: [wavePrompt, loopedTimeline],
       conditional_function: () => getArrows() > 0,
@@ -168,20 +171,21 @@ function createSection(
         window.removeEventListener('keypress', handleKeyPress);
       },
     };
+
+    // A wave consists of a prompt for the wave and the response-feedback loop
   }
 
   // The trial for the prompt of each section
   let sectionPrompt = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: sectionStimulus,
+    stimulus: prompt,
     prompt: 'Press any key to continue...',
     trial_duration: sectionStimulusDuration,
   };
 
   // A section is just its prompt and maxWave number of waves
-  let waves = Array.from({ length: maxWave }, (_, i) => {
-    const { min, max } = settings.slider;
-    return createWave(normalRandomInRange(grand_mean, grand_sd, min, max), sd, type, i);
+  let waves = Array.from({ length: maxWaves }, (_, i) => {
+    return createWave(normalRandomInRange(grand_mean, grand_sd, 0, max), sd, type, i);
   });
 
   return {
