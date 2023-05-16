@@ -44,7 +44,7 @@ function isHit(response, targetValue, isOverlord, arrowSize, minionSize, overlor
 }
 
 // Handles click space event
-function pressSpace(e) {
+function handleKeyPress(e) {
   e.preventDefault();
   if (e.keyCode === 32) {
     let nextButton = document.getElementById('jspsych-html-slider-response-next');
@@ -107,7 +107,7 @@ export {
   getTargetTop,
   isCollision,
   isHit,
-  pressSpace,
+  handleKeyPress,
   getArcher,
   normalRandomInRange,
 };

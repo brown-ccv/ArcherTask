@@ -1,7 +1,7 @@
 import anime from 'animejs/lib/anime.es.js';
 import htmlSliderResponse from './archer';
 import { animationReset } from './animations';
-import { pressSpace, getArcher } from './utils';
+import { handleKeyPress, getArcher } from './utils';
 
 // Utility function to end the current wave
 function endWave(jspsych) {
@@ -73,10 +73,10 @@ function createSlider(
     // For `feedback` types, disable interactions for the archer
     // so it only displays the results
     if (type !== 'feedback') {
-      window.addEventListener('keypress', pressSpace);
+      window.addEventListener('keypress', handleKeyPress);
       archer.disabled = false;
     } else {
-      window.removeEventListener('keypress', pressSpace);
+      window.removeEventListener('keypress', handleKeyPress);
       archer.disabled = true;
     }
 
