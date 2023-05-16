@@ -1,70 +1,107 @@
-import { lang, config } from '../config/main';
-import preamble from './preamble';
-import taskBlock from './taskBlock';
-import { countdown, showMessage } from '@brown-ccv/behavioral-task-trials';
-import { cameraStart, cameraEnd } from '../trials/camera';
-import { practiceBlock } from '../config/practice';
-import { tutorialBlock } from '../config/tutorial';
-import { exptBlock1, exptBlock2 } from '../config/experiment';
-
-import { ageCheck, sliderCheck, demographics, iusSurvey, debrief } from '../trials/quizTrials';
-
-// Add your jsPsych options here.
-// Honeycomb will combine these custom options with other options needed by Honyecomb.
-const jsPsychOptions = {
-  on_trial_finish: function (data) {
-    console.log('A trial just ended, here are the latest data:');
-    console.log(data);
-  },
-  default_iti: 250,
-};
+import jsPsychInstructions from '@jspsych/plugin-instructions';
+import jsPsychKeyboardResponse from '@jspsych/plugin-html-keyboard-response';
+import { createSection } from './section';
 
 // Add your jsPsych timeline here.
 // Honeycomb will call this function for us after the subject logs in, and run the resulting timeline.
 // The instance of jsPsych passed in will include jsPsychOptions above, plus other options needed by Honeycomb.
-const buildTimeline = (jsPsych) =>
-  config.USE_MTURK ? mturkTimeline : buildPrimaryTimeline(jsPsych);
+function buildTimeline(jspsych, config) {
+  const {
+    grand_mean,
+    grand_sd,
+    sd,
+    slider,
+    maxArrows,
+    waves,
+    showStatusMessage,
+    waveStimulus,
+    waveStimulusDuration,
+    sectionStimulusDuration,
+  } = config;
 
-const buildPrimaryTimeline = (jsPsych) => {
-  const primaryTimeline = [
-    preamble,
-    ageCheck,
-    sliderCheck,
-    countdown({ message: lang.countdown.message1 }),
-    taskBlock(practiceBlock),
-    countdown({ message: lang.countdown.message2 }),
-    taskBlock(exptBlock1),
-    demographics,
-    iusSurvey,
-    debrief,
+  const max = slider.max;
+
+  const pages = [
+    `<p>Welcome!</p>
+  <p>Thank you for voluteering for this experiment.</p>`,
+    `<p>You are going to play a computer game.</p>
+  <p>Then next screens will show you instructions for what you have to do.</p>`,
   ];
 
-  if (config.USE_CAMERA) {
-    primaryTimeline.splice(1, 0, cameraStart(jsPsych));
-    primaryTimeline.push(cameraEnd(5000));
-  }
+  const instruction = {
+    type: jsPsychInstructions,
+    pages,
+    show_clickable_nav: true,
+  };
 
-  primaryTimeline.push(
-    showMessage(config, {
-      duration: 5000,
-      message: lang.task.end,
-    })
-  );
+  const createSectionCurried = (jspsych, type, maxArrows, maxWaves, sectionStimulus) => {
+    return createSection(
+      jspsych,
+      grand_mean,
+      grand_sd,
+      sd,
+      type,
+      max,
+      maxArrows,
+      maxWaves,
+      showStatusMessage,
+      waveStimulus,
+      waveStimulusDuration,
+      sectionStimulus,
+      sectionStimulusDuration,
+      config
+    );
+  };
 
-  return primaryTimeline;
-};
+  const practiceSection1 = (jspsych) => {
+    return createSectionCurried(
+      jspsych,
+      'practice1',
+      10,
+      3,
+      'You will now practice shooting at several minions in a wave, and adjusting your aim'
+    );
+  };
 
-const mturkTimeline = [
-  preamble,
-  countdown({ message: lang.countdown.message1 }),
-  taskBlock(tutorialBlock),
-  countdown({ message: lang.countdown.message2 }),
-  taskBlock(exptBlock2),
-  showMessage(config, {
-    duration: 5000,
-    message: lang.task.end,
-  }),
-];
+  const practiceSection2 = (jspsych) => {
+    return createSectionCurried(
+      jspsych,
+      'practice2',
+      10,
+      3,
+      `<p>To end the current wave of minions by running away,<br />click the RUN button at the top left of the screen.</p>
+  <p>This will immediately skip the rest of the minions, and advance you to a new wave.</p>`
+    );
+  };
+
+  const minionSection = (jspsych) => {
+    return createSectionCurried(
+      jspsych,
+      'minion',
+      maxArrows,
+      waves,
+      'You are now ready to start! You will face ten waves of minions, followed by the overlord.'
+    );
+  };
+
+  const overlordSection = (jspsych) => {
+    return createSectionCurried(jspsych, 'overlord', 1, 1, 'The Overlord is coming!');
+  };
+
+  const outro = {
+    type: jsPsychKeyboardResponse,
+    stimulus: 'Thank you for participating in this experiment!',
+  };
+
+  return [
+    instruction,
+    practiceSection1(jspsych),
+    practiceSection2(jspsych),
+    minionSection(jspsych),
+    overlordSection(jspsych),
+    outro,
+  ];
+}
 
 // Honeycomb, please include these options, and please get the timeline from this function.
-export { jsPsychOptions, buildTimeline };
+export { buildTimeline };

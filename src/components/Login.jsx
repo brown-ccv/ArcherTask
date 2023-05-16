@@ -20,9 +20,9 @@ function Login({ handleLogin, initialParticipantID, initialStudyID, validationFu
 
   return (
     <div className='centered-h-v'>
-      <div className='width-50'>
-        <Form className='centered-h-v' onSubmit={handleSubmit}>
-          <Form.Group className='width-100' size='lg' controlId='participantId'>
+      <div className='rounded-5 bg-white mt-5 shadow-sm'>
+        <Form className='centered-h-v p-5' onSubmit={handleSubmit}>
+          <Form.Group className='width-100 mt-2' size='lg' controlId='participantId'>
             <Form.Label>Participant ID</Form.Label>
             <Form.Control
               autoFocus
@@ -31,7 +31,7 @@ function Login({ handleLogin, initialParticipantID, initialStudyID, validationFu
               onChange={(e) => setParticipant(e.target.value)}
             />
           </Form.Group>
-          <Form.Group className='width-100' size='lg' controlId='studyId'>
+          <Form.Group className='width-100 mt-2' size='lg' controlId='studyId'>
             <Form.Label>Study ID</Form.Label>
             <Form.Control
               type='studyId'
@@ -40,7 +40,8 @@ function Login({ handleLogin, initialParticipantID, initialStudyID, validationFu
             />
           </Form.Group>
           <Button
-            style={{ width: '100%' }}
+            className='mt-4 btn'
+            style={{ width: '100%', backgroundColor: '--var(bs-green)' }}
             block
             size='lg'
             type='submit'

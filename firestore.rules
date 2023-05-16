@@ -8,13 +8,16 @@ service cloud.firestore {
 
         // experimentID must be in the data subcollection
         match /data/{experimentID} {
-          allow create, read: if true
+          allow create, update, read: if true
 
           // trialID must be in the trials subcollection
           match /trials/{trialID} {
             allow create, read: if true
           }
         }
+      }
+      match /registered_studies/{studyID}/config/{participantID} {
+        allow read: if participantID == 'default' || participantID in get(/databases/$(database)/documents/registered_studies/$(studyID)).data.registered_participants;
       }
     }
 }

@@ -4,7 +4,7 @@
   "author": {
     "name": "Brown CCV",
     "email": "ccv-bot@brown.edu",
-    "url": "ccv.brown.edu"
+    "url": "https://ccv.brown.edu"
   },
   "version": "2.3.1",
   "license": "MIT",
@@ -18,13 +18,19 @@
     "@jspsych/plugin-html-button-response": "^1.1.1",
     "@jspsych/plugin-html-keyboard-response": "^1.1.1",
     "@jspsych/plugin-image-keyboard-response": "^1.1.1",
+    "@jspsych/plugin-instructions": "^1.1.2",
     "@jspsych/plugin-survey-multi-select": "^1.1.1",
+    "@types/jest": "^29.5.1",
+    "@types/node": "^18.16.3",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.1",
+    "animejs": "^3.2.1",
     "bootstrap": "^5.2.0-beta1",
     "electron-log": "^4.4.8",
     "electron-squirrel-startup": "^1.0.0",
     "event-marker": "git+https://github.com/brown-ccv/event-marker.git",
     "execa": "^5.0.0",
-    "firebase": "^9.8.4",
+    "firebase": "^9.21.0",
     "fs-extra": "^8.1.0",
     "jquery": "^3.4.1",
     "jspsych": "^7.2.3",
@@ -33,7 +39,8 @@
     "react": "^16.8.6",
     "react-bootstrap": "^1.6.1",
     "react-dom": "^16.8.6",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^5.0.1",
+    "typescript": "^4.9.0",
     "wait-on": "^7.0.1"
   },
   "devDependencies": {
@@ -94,7 +101,9 @@
     "prepare": "husky install"
   },
   "babel": {
-    "plugins": [ "macros" ]
+    "plugins": [
+      "macros"
+    ]
   },
   "browserslist": {
     "production": [
@@ -109,9 +118,13 @@
     ]
   },
   "config": {
-    "commitizen": { "path": "./node_modules/cz-conventional-changelog" },
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    },
     "forge": {
-      "packagerConfig": { "asar": true },
+      "packagerConfig": {
+        "asar": true
+      },
       "makers": [
         {
           "name": "@electron-forge/maker-deb",
@@ -139,7 +152,7 @@
     }
   },
   "lint-staged": {
-    "**/*.{js,jsx}": [
+    "**/*.{js,jsx,ts}": [
       "eslint --fix"
     ]
   }
