@@ -1,5 +1,5 @@
 import { initJsPsych } from 'jspsych';
-import React, { useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 import { config } from '../config/main';
 import { initParticipant, firestoreConfig, addConfigToFirebase } from '../firebase';
@@ -9,6 +9,21 @@ import settings from '../config/settings.json';
 import minionImg from '../assets/images/minion.png';
 import overlordImg from '../assets/images/overlord.png';
 import explosionGif from '../assets/images/explosion.gif';
+
+function DivWithImg({ id, size, img }) {
+  const makeStyleFromSize = (size) => {
+    return {
+      width: size + 'px',
+      height: size + 'px',
+    };
+  };
+
+  return (
+    <div id={id} style={makeStyleFromSize(size)}>
+      <img src={img} style={makeStyleFromSize(size)} />
+    </div>
+  );
+}
 
 function JsPsychExperiment({
   participantId,
@@ -33,6 +48,12 @@ function JsPsychExperiment({
   // TODO 169: JsPsych has a built in timestamp function
   const startDate = new Date().toISOString();
 
+  const [interfaceConfig, setInterfaceConfig] = useState({
+    arrowSize: 3,
+    minionSize: 5,
+    overlordSize: 7,
+  });
+
   // Create the instance of jsPsych that we'll reuse within the scope of this JsPsychExperiment component.
   // As of jspsych 7, we create our own jspsych instance(s) where needed instead of importing one global instance.
   const jsPsych = useMemo(() => {
@@ -52,19 +73,24 @@ function JsPsychExperiment({
 
   // These useEffect callbacks are similar to componentDidMount / componentWillUnmount.
   // If necessary, useLayoutEffect callbacks might be even more similar.
-  useEffect(async () => {
-    let tlConfig;
-    if (config.USE_FIREBASE) {
-      tlConfig = await firestoreConfig(studyId, participantId);
-      if (!tlConfig) {
-        tlConfig = settings;
+  useEffect(() => {
+    async function loadConfigAndStart() {
+      let tlConfig;
+      if (config.USE_FIREBASE) {
+        tlConfig = await firestoreConfig(studyId, participantId);
+        if (!tlConfig) {
+          tlConfig = settings;
+        }
       }
+
+      setInterfaceConfig(tlConfig.interface);
+
+      addConfigToFirebase(participantId, studyId, startDate, tlConfig);
+
+      const timeline = buildTimeline(jsPsych, tlConfig);
+      jsPsych.run(timeline);
     }
-
-    addConfigToFirebase(participantId, studyId, startDate, tlConfig);
-
-    const timeline = buildTimeline(jsPsych, tlConfig);
-    jsPsych.run(timeline);
+    loadConfigAndStart();
 
     return () => {
       try {
@@ -78,16 +104,10 @@ function JsPsychExperiment({
   return (
     <div id='jspsych-container' className='rounded-5 bg-white mt-5 shadow-sm'>
       <div id='jspsych-main'></div>
-      <div id='arrow'></div>
-      <div id='minion'>
-        <img src={minionImg} width='13px' height='13px' />
-      </div>
-      <div id='overlord'>
-        <img src={overlordImg} width='17px' height='17px' />
-      </div>
-      <div id='explosion'>
-        <img src={explosionGif} width='0px' height='0px' />
-      </div>
+      <div id='arrow' style={{ height: interfaceConfig.arrowSize + 'px' }}></div>
+      <DivWithImg id={'minion'} size={interfaceConfig.minionSize} img={minionImg} />
+      <DivWithImg id={'overlord'} size={interfaceConfig.overlordSize} img={overlordImg} />
+      <DivWithImg id={'explosion'} size={interfaceConfig.minionSize} img={explosionGif} />
     </div>
   );
 }

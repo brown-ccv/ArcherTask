@@ -1,7 +1,8 @@
 import createSlider from './slider';
 import jsPsychHtmlKeyboardResponse from '@jspsych/plugin-html-keyboard-response';
-import { isHit, pressSpace, getArcher, normalRandomInRange } from './utils';
+import { isHit, handleKeyPress, getArcher, normalRandomInRange } from './utils';
 import { playAnimation } from './animations';
+import { arrowsState, runButtonState, inputsState } from './hooks';
 
 function createSection(
   jspsych,
@@ -27,11 +28,6 @@ function createSection(
   // The state of the number of arrows is shared in each section
   // This function mimics useState in React that allows
   // individual trials to get and mutate the number of arrows left.
-  const arrowsState = (n_arrows) => {
-    let arrows = n_arrows;
-
-    return [() => arrows, (n) => (arrows = n)];
-  };
 
   const [getArrows, setArrows] = arrowsState(maxArrows);
 
@@ -39,22 +35,12 @@ function createSection(
     // The state of whether the run button should be shown is shared in each wave
     // This function mimics useState in React that allows
     // individual trials to get and mutate the show button state.
-    const runButtonState = (state) => {
-      let buttonState = state;
-
-      return [() => buttonState, (state) => (buttonState = state)];
-    };
     const [getRunButtonState, setRunButtonState] = runButtonState(false);
 
-    const isOverlord = type === 'overlord';
-
     // Sets up another state to log events
-    const inputsState = (initState) => {
-      let state = initState;
-
-      return [() => state, (e) => state.push(e), () => (state = [])];
-    };
     const [getInputs, addInputs, resetInputs] = inputsState([]);
+
+    const isOverlord = type === 'overlord';
 
     // Decides which data to log in each input event
     function logInputs(e) {
@@ -84,6 +70,9 @@ function createSection(
 
     // Creates the callback functions for the response trials
     function responseOnLoad() {
+      let archer = getArcher();
+      archer.focus({ focusVisible: false });
+      archer.addEventListener('blur', () => archer.focus());
       enableEventLogging();
     }
 
@@ -176,7 +165,7 @@ function createSection(
       timeline: [wavePrompt, loopedTimeline],
       conditional_function: () => getArrows() > 0,
       timeline_on_load: () => {
-        window.removeEventListener('keypress', pressSpace);
+        window.removeEventListener('keypress', handleKeyPress);
       },
     };
   }
