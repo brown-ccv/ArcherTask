@@ -17,7 +17,7 @@ service cloud.firestore {
         }
       }
       match /registered_studies/{studyID}/config/{participantID} {
-        allow read: if participantID == 'default' || participantID in get(/databases/$(database)/documents/registered_studies/$(studyID)).data.registered_participants;
+        allow read, update: if participantID == 'default' || participantID in get(/databases/$(database)/documents/registered_studies/$(studyID)).data.registered_participants;
       }
     }
 }

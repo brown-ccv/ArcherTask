@@ -113,7 +113,7 @@ const firestoreConfig = async (studyID, participantID) => {
   return false;
 };
 
-const addConfigToFirebase = (participantID, studyID, startDate, config) => {
+const addConfigToFirebaseData = (participantID, studyID, startDate, config) => {
   console.log('Adding config to Firebase');
   db.collection(RESPONSE_COLLECTION_NAME)
     .doc(studyID)
@@ -152,6 +152,6 @@ export {
   initParticipant,
   addToFirebase,
   firestoreConfig,
-  addConfigToFirebase,
+  addConfigToFirebaseData as addConfigToFirebase,
 };
 export default firebase;
