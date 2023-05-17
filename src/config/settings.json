@@ -14,10 +14,10 @@
     "overlordSize": 17
   },
   "common": {
-    "grand_mean": 100,
-    "grand_sd": 20,
-    "sd": 5,
-    "max": 200,
+    "globalMeans": [50, 100, 150],
+    "globalStd": 10,
+    "localStd": 5,
+    "sliderMax": 200,
     "sectionStimulusDuration": 5000,
     "waveStimulusDuration": 2000
   },

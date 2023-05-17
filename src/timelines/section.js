@@ -9,6 +9,8 @@ function createSection(
   settings,
   prompt,
   type,
+  globalMean,
+  levelNumber,
   maxArrows,
   maxMinions,
   maxWaves,
@@ -25,12 +27,13 @@ function createSection(
   // This function mimics useState in React that allows
   // individual trials to get and mutate the number of arrows left.
 
-  const { grand_mean, grand_sd, sd, max, waveStimulusDuration, sectionStimulusDuration } =
+  const { grandStd, localStd, sliderMax, waveStimulusDuration, sectionStimulusDuration } =
     settings.common;
 
   const [getArrows, setArrows] = numberState(maxArrows);
+  const [getScore, setScore] = numberState(0);
 
-  function createWave(mean, sd, type, waveNumber) {
+  function createWave(localMean, localStd, type, waveNumber) {
     // The state of whether the run button should be shown is shared in each wave
     // This function mimics useState in React that allows
     // individual trials to get and mutate the show button state.
@@ -79,7 +82,10 @@ function createSection(
     function responseOnFinish(data) {
       const { arrowSize, minionSize, overlordSize } = settings.interface;
       if (showRunButton) setRunButtonState(true);
-      data.targetValue = normalRandomInRange(data.mean, data.sd, 0, max);
+      data.targetValue =
+        type === 'overlord'
+          ? globalMean
+          : normalRandomInRange(data.localMean, data.localStd, 0, sliderMax);
       data.hit = isHit(
         data.response,
         data.targetValue,
@@ -105,44 +111,45 @@ function createSection(
     function feedbackOnFinish(data) {
       const lastTrialData = jspsych.data.get().last(2).trials[0];
       data.hit = lastTrialData.hit;
+      if (data.hit) setScore(data.score + (type === 'overlord' ? 50 : 1));
       setMinions(getMinions() + 1);
     }
 
     // Creates a trial and a feedback respectively
     let response = createSlider(
       jspsych,
-      mean,
-      sd,
-      max,
+      settings,
+      localMean,
       type,
       responseOnLoad,
       responseOnFinish,
+      getScore,
       getArrows,
       setArrows,
       maxArrows,
+      levelNumber,
       waveNumber,
       maxWaves,
       showStatus,
-      getRunButtonState,
-      settings
+      getRunButtonState
     );
 
     let feedback = createSlider(
       jspsych,
-      mean,
-      sd,
-      max,
+      settings,
+      localMean,
       'feedback',
       feedbackOnLoad,
       feedbackOnFinish,
+      getScore,
       getArrows,
       setArrows,
       maxArrows,
+      levelNumber,
       waveNumber,
       maxWaves,
       showStatus,
-      getRunButtonState,
-      settings
+      getRunButtonState
     );
 
     // The timeline that loops forever as long as there are still arrows left
@@ -185,7 +192,8 @@ function createSection(
 
   // A section is just its prompt and maxWave number of waves
   let waves = Array.from({ length: maxWaves }, (_, i) => {
-    return createWave(normalRandomInRange(grand_mean, grand_sd, 0, max), sd, type, i);
+    const localMean = normalRandomInRange(globalMean, grandStd, 0, sliderMax);
+    return createWave(localMean, localStd, type, i);
   });
 
   return {

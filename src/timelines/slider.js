@@ -12,21 +12,23 @@ function endWave(jspsych) {
 // Creates a htmlSliderResponse trial
 function createSlider(
   jspsych,
-  mean,
-  sd,
-  max,
+  settings,
+  localMean,
   type,
   onLoad,
   onFinish,
+  getScore,
   getArrows,
   setArrows,
   maxArrows,
+  levelNumber,
   waveNumber,
   maxWaves,
   showStatus,
-  showRunButton,
-  settings
+  showRunButton
 ) {
+  const { localStd, sliderMax } = settings.common;
+
   let runPressed = false;
 
   // Hanlder function for the run button
@@ -66,7 +68,7 @@ function createSlider(
     }
 
     // Determines whether a status message should be shown.
-    if (showStatus) setStatusMessage();
+    if (showStatus) setStatus();
 
     let archer = getArcher();
 
@@ -95,19 +97,16 @@ function createSlider(
     // Resets the animations
     animationReset(jspsych, data, settings);
 
-    // For feedback types, end the current wave after a hit
-    // Also ends the wave if run button is pressed
-    if (type === 'feedback' && data.hit) endWave(jspsych);
+    // For feedback types, end the wave if run button is pressed
     if (data.runPressed) endWave(jspsych);
   }
 
   // Sets the status message given current state
-  function setStatusMessage() {
-    const arrowsLeft = getArrows();
-
+  function setStatus() {
     let status = document.getElementById('status');
-    status.innerHTML = `Arrows left: ${arrowsLeft}/${maxArrows}<br />
-      Current wave: ${waveNumber + 1}/${maxWaves}`;
+    status.innerHTML = `Hits: ${getScore()}<br />Arrows left: ${getArrows()}/${maxArrows} Wave ${
+      waveNumber + 1
+    }/${maxWaves}`;
   }
 
   return {
@@ -125,13 +124,13 @@ function createSlider(
       if (filteredData.count() > 0) {
         return filteredData.last(1).trials[0].response;
       } else {
-        return Math.round(max / 2);
+        return Math.round(sliderMax / 2);
       }
     },
-    max,
+    max: sliderMax,
     data: {
-      mean,
-      sd,
+      localMean,
+      localStd,
       type,
       arrowsLeft: () => {
         if (type === 'feedback') {
@@ -139,9 +138,11 @@ function createSlider(
         }
         return getArrows();
       },
+      score: getScore(),
+      levelNumber,
       maxArrows,
       waveNumber,
-      maxWave: maxWaves,
+      maxWaves,
     },
     on_finish: trialOnFinish,
     on_load: trialOnLoad,
