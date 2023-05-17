@@ -85,6 +85,7 @@ const getFirestoreConfig = (studyID, docName) => {
     .get()
     .then((doc) => {
       if (doc.exists) {
+        console.log(doc);
         return JSON.parse(doc.data().config);
       } else {
         console.log(`Document ${docName} does not exist`);
