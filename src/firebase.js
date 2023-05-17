@@ -85,8 +85,9 @@ const getFirestoreConfig = (studyID, docName) => {
     .get()
     .then((doc) => {
       if (doc.exists) {
-        console.log(doc);
-        return JSON.parse(doc.data().config);
+        const config = doc.data().config;
+        console.log(config);
+        return config;
       } else {
         console.log(`Document ${docName} does not exist`);
         return false;
@@ -103,14 +104,13 @@ const getFirestoreConfig = (studyID, docName) => {
  */
 const firestoreConfig = async (studyID, participantID) => {
   const pConfig = await getFirestoreConfig(studyID, participantID);
+
+  if (pConfig) return pConfig;
+
   const defaultConfig = await getFirestoreConfig(studyID, 'default');
-  if (pConfig) {
-    return pConfig;
-  } else if (defaultConfig) {
-    return defaultConfig;
-  } else {
-    return false;
-  }
+  if (defaultConfig) return defaultConfig;
+
+  return false;
 };
 
 const addConfigToFirebase = (participantID, studyID, startDate, config) => {
