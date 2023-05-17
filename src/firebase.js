@@ -133,7 +133,7 @@ async function addToFirebase(data) {
   const participantID = data.participant_id;
   const startDate = data.start_date;
 
-  if (data.type === 'minion' || data.type === 'overlord') {
+  if (data.type === 'minions' || data.type === 'overlord') {
     console.log(data);
     try {
       const experiment = getExperimentRef(studyID, participantID, startDate);
