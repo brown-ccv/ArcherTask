@@ -20,10 +20,11 @@ function buildTimeline(jspsych, settings) {
     sliderMax
   );
 
-  const createSectionCurried = (prompt, sectionConfig) => {
-    const { type, maxArrows, maxMinions, maxWaves, showStatus, showRunButton, showWaveStimulus } =
-      sectionConfig;
-    return createSection(
+  const createSectionCurried = (
+    prompt,
+    { type, maxArrows, maxMinions, maxWaves, showStatus, showRunButton, showWaveStimulus }
+  ) =>
+    createSection(
       jspsych,
       settings,
       prompt,
@@ -37,7 +38,6 @@ function buildTimeline(jspsych, settings) {
       showRunButton,
       showWaveStimulus
     );
-  };
 
   const instructionTrials = allPrompts.instructions.map((pages) => {
     return {
