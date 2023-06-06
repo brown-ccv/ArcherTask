@@ -12,7 +12,7 @@ function buildTimeline(jspsych, settings) {
   const sectionConfigs = settings.sections;
   const { globalMeans, globalStd, sliderMax } = settings.common;
   const { maxArrows, maxWaves, maxTrials } = sectionConfigs.minions;
-  const allPrompts = prompts(maxArrows, maxWaves, maxTrials);
+  const allPrompts = prompts(maxArrows, maxWaves, maxTrials, globalMeans.length);
   const globalMeanForPractice = normalRandomInRange(
     Math.round(sliderMax / 2),
     globalStd,

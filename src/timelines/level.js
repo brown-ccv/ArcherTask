@@ -75,9 +75,7 @@ function createLevels(
       type: jsPsychHtmlKeyboardResponse,
       stimulus: `Level ${levelNumber + 1}!`,
       prompt: 'Press any key to continue...',
-      data: {
-        levelNumber: levelNumber + 1,
-      },
+      trial_duration: settings.common.levelStimulusDuration,
     };
     const level = createLevel(
       jspsych,
