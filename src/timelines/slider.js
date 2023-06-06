@@ -10,23 +10,7 @@ function endWave(jspsych) {
 }
 
 // Creates a htmlSliderResponse trial
-function createSlider(
-  jspsych,
-  settings,
-  localMean,
-  type,
-  onLoad,
-  onFinish,
-  getScore,
-  getArrows,
-  setArrows,
-  maxArrows,
-  levelNumber,
-  waveNumber,
-  maxWaves,
-  showStatus,
-  showRunButton
-) {
+function createSlider(jspsych, settings, type, data, onLoad, onFinish, status, showRunButton) {
   const { localStd, sliderMax } = settings.common;
 
   let runPressed = false;
@@ -40,6 +24,7 @@ function createSlider(
       anim.reset();
     });
     endWave(jspsych);
+    runPressed = false;
   }
 
   // The stimulus repurposed for displaying the
@@ -68,7 +53,7 @@ function createSlider(
     }
 
     // Determines whether a status message should be shown.
-    if (showStatus) setStatus();
+    if (status) status();
 
     let archer = getArcher();
 
@@ -101,48 +86,24 @@ function createSlider(
     if (data.runPressed) endWave(jspsych);
   }
 
-  // Sets the status message given current state
-  function setStatus() {
-    let status = document.getElementById('status');
-    status.innerHTML = `Hits: ${getScore()}<br />Arrows left: ${getArrows()}/${maxArrows} Wave ${
-      waveNumber + 1
-    }/${maxWaves}`;
-  }
-
   return {
     type: htmlSliderResponse,
     stimulus,
     slider_start: () => {
       // If this is feedback, simply return the last trial value
       // which is guaranteed to be a response type
-      if (type === 'feedback') {
+      if (type === 'feedback' || !data.firstTrial()) {
         return jspsych.data.getLastTrialData().trials[0].response;
       }
 
-      // Reset slider position only at the beginning of a trial
-      const filteredData = jspsych.data.get().filter({ type, waveNumber });
-      if (filteredData.count() > 0) {
-        return filteredData.last(1).trials[0].response;
-      } else {
-        return Math.round(sliderMax / 2);
-      }
+      // Reset slider position only at the beginning of a wave
+      return Math.round(sliderMax / 2);
     },
     max: sliderMax,
     data: {
-      localMean,
+      ...data,
       localStd,
       type,
-      arrowsLeft: () => {
-        if (type === 'feedback') {
-          setArrows(getArrows() - 1);
-        }
-        return getArrows();
-      },
-      score: getScore(),
-      levelNumber,
-      maxArrows,
-      waveNumber,
-      maxWaves,
     },
     on_finish: trialOnFinish,
     on_load: trialOnLoad,

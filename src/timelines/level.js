@@ -11,48 +11,100 @@ function createSectionSpread(
   settings,
   globalMean,
   levelNumber,
-  { prompt, type, maxArrows, maxMinions, maxWaves, showStatus, showRunButton, showWaveStimulus }
+  prompt,
+  { type, maxArrows, maxWaves, maxTrials, showStatus, showRunButton, showWaveStimulus }
 ) {
   return createSection(
     jspsych,
     settings,
-    prompt,
     type,
+    prompt,
     globalMean,
     levelNumber,
     maxArrows,
-    maxMinions,
     maxWaves,
+    maxTrials,
     showStatus,
     showRunButton,
     showWaveStimulus
   );
 }
 
-function createLevel(jspsych, settings, globalMean, levelNumber, minionsConfig, overlordConfig) {
-  const sections = [minionsConfig, overlordConfig].map((config) =>
-    createSectionSpread(jspsych, settings, globalMean, levelNumber, config)
+function createLevel(
+  jspsych,
+  settings,
+  globalMean,
+  levelNumber,
+  overlordPrompt,
+  minionsConfig,
+  overlordConfig
+) {
+  const minionsSection = createSectionSpread(
+    jspsych,
+    settings,
+    globalMean,
+    levelNumber,
+    null,
+    minionsConfig
+  );
+  const overlordSection = createSectionSpread(
+    jspsych,
+    settings,
+    globalMean,
+    levelNumber,
+    overlordPrompt,
+    overlordConfig
   );
 
-  const levelPrompt = {
-    type: jsPsychHtmlKeyboardResponse,
-    stimulus: `Level ${levelNumber}!`,
-    prompt: 'Press any key to continue...',
-  };
-
-  sections.unshift(levelPrompt);
-
-  return sections;
+  return [minionsSection, overlordSection];
 }
 
-function createLevels(jspsych, settings, globalMeans, minionsConfig, overlordConfig) {
+function createLevels(
+  jspsych,
+  settings,
+  globalMeans,
+  minionsPrompt,
+  overlordPrompt,
+  minionsConfig,
+  overlordConfig
+) {
   const shuffledMeans = shuffleArray(globalMeans);
 
-  const levels = shuffledMeans.map((globalMean, levelNumber) =>
-    createLevel(jspsych, settings, globalMean, levelNumber, minionsConfig, overlordConfig)
-  );
+  let levels = shuffledMeans.map((globalMean, levelNumber) => {
+    const levelPrompt = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: `Level ${levelNumber + 1}!`,
+      prompt: 'Press any key to continue...',
+      data: {
+        levelNumber: levelNumber + 1,
+      },
+    };
+    const level = createLevel(
+      jspsych,
+      settings,
+      globalMean,
+      levelNumber + 1,
+      overlordPrompt,
+      minionsConfig,
+      overlordConfig
+    );
 
-  return levels.flat();
+    level.unshift(levelPrompt);
+
+    return level;
+  });
+
+  const sectionPrompt = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: minionsPrompt,
+    prompt: 'Press any key to continue...',
+    trial_duration: settings.common.sectionStimulusDuration,
+  };
+
+  levels = levels.flat();
+  levels.unshift(sectionPrompt);
+
+  return levels;
 }
 
 export { createLevels };

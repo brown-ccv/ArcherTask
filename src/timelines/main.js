@@ -11,8 +11,8 @@ import { normalRandomInRange } from './utils';
 function buildTimeline(jspsych, settings) {
   const sectionConfigs = settings.sections;
   const { globalMeans, globalStd, sliderMax } = settings.common;
-  const { maxArrows, maxMinions, maxWaves } = sectionConfigs.minions;
-  const allPrompts = prompts(maxArrows, maxMinions, maxWaves);
+  const { maxArrows, maxWaves, maxTrials } = sectionConfigs.minions;
+  const allPrompts = prompts(maxArrows, maxWaves, maxTrials);
   const globalMeanForPractice = normalRandomInRange(
     Math.round(sliderMax / 2),
     globalStd,
@@ -22,18 +22,18 @@ function buildTimeline(jspsych, settings) {
 
   const createSectionCurried = (
     prompt,
-    { type, maxArrows, maxMinions, maxWaves, showStatus, showRunButton, showWaveStimulus }
+    { type, maxArrows, maxWaves, maxTrials, showStatus, showRunButton, showWaveStimulus }
   ) =>
     createSection(
       jspsych,
       settings,
-      prompt,
       type,
+      prompt,
       globalMeanForPractice,
-      1,
+      0,
       maxArrows,
-      maxMinions,
       maxWaves,
+      maxTrials,
       showStatus,
       showRunButton,
       showWaveStimulus
@@ -55,6 +55,8 @@ function buildTimeline(jspsych, settings) {
     jspsych,
     settings,
     globalMeans,
+    allPrompts.minions,
+    allPrompts.overlord,
     sectionConfigs.minions,
     sectionConfigs.overlord
   );

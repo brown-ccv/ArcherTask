@@ -1,19 +1,18 @@
 import createSlider from './slider';
 import jsPsychHtmlKeyboardResponse from '@jspsych/plugin-html-keyboard-response';
-import { isHit, handleKeyPress, getArcher, normalRandomInRange } from './utils';
+import { isHit, getArcher, normalRandomInRange } from './utils';
 import { playAnimation } from './animations';
-import { numberState, runButtonState, inputsState } from './hooks';
 
 function createSection(
   jspsych,
   settings,
-  prompt,
   type,
+  prompt,
   globalMean,
   levelNumber,
   maxArrows,
-  maxMinions,
   maxWaves,
+  maxTrials,
   showStatus,
   showRunButton,
   showWaveStimulus
@@ -27,21 +26,25 @@ function createSection(
   // This function mimics useState in React that allows
   // individual trials to get and mutate the number of arrows left.
 
-  const { grandStd, localStd, sliderMax, waveStimulusDuration, sectionStimulusDuration } =
+  const { globalMeans, globalStd, sliderMax, sectionStimulusDuration, waveStimulusDuration } =
     settings.common;
 
-  const [getArrows, setArrows] = numberState(maxArrows);
-  const [getScore, setScore] = numberState(0);
+  let arrowsLeft = maxArrows;
+  let localMean = 0;
+  let waveNumber = 0;
+  let maxLevels = globalMeans.length;
+  let firstTrialOfWave = false;
+  let score = 0;
 
-  function createWave(localMean, localStd, type, waveNumber) {
+  function createTrials(type) {
     // The state of whether the run button should be shown is shared in each wave
     // This function mimics useState in React that allows
     // individual trials to get and mutate the show button state.
-    const [getRunButtonState, setRunButtonState] = runButtonState(false);
 
     // Sets up another state to log events
-    const [getInputs, addInputs, resetInputs] = inputsState([]);
-    const [getMinions, setMinions] = numberState(0);
+    let inputs = [];
+
+    let trialNumber = 0;
 
     const isOverlord = type === 'overlord';
 
@@ -52,14 +55,14 @@ function createSection(
         timestamp: e.timeStamp,
         value: parseInt(e.target.value, 10),
       };
-      addInputs(interactiveData);
+      inputs.push(interactiveData);
     }
 
     // Determines which events to log
     const watchedEvents = ['input', 'mousedown', 'mouseup', 'keydown', 'keyup'];
 
     function enableEventLogging() {
-      resetInputs();
+      inputs = [];
       let archer = getArcher();
 
       watchedEvents.forEach((d) => archer.addEventListener(d, logInputs));
@@ -69,6 +72,32 @@ function createSection(
       let archer = getArcher();
 
       watchedEvents.forEach((d) => archer.removeEventListener(d, logInputs));
+    }
+
+    function calculateScore() {
+      let score = jspsych.data.get().filter({ type, hit: true }).count();
+      if (type === 'minion' || type === 'overlord') {
+        score += jspsych.data.get().filter({ type: 'overlord', hit: true }).count() * 50;
+      }
+      return score;
+    }
+
+    // Sets the status message given current state
+    function setStatus() {
+      let status = document.getElementById('status');
+      let statusMsg =
+        `Score: ${score}&nbsp;&nbsp;&nbsp;Arrows: ${arrowsLeft}/${maxArrows}` + '<br />';
+      if (maxTrials) {
+        let trialNumber = jspsych.data.getLastTrialData().trials[0].trialNumber;
+        if (!trialNumber || (type !== 'feedback' && trialNumber != maxTrials)) {
+          trialNumber = 1;
+        }
+        statusMsg += `Trial ${trialNumber}/${maxTrials}&nbsp;&nbsp;&nbsp;`;
+      }
+
+      statusMsg += `Wave ${waveNumber}/${maxWaves}&nbsp;&nbsp;&nbsp;`;
+      statusMsg += levelNumber ? `Level ${levelNumber}/${maxLevels}` : 'Practice Level';
+      status.innerHTML = statusMsg;
     }
 
     // Creates the callback functions for the response trials
@@ -81,7 +110,6 @@ function createSection(
 
     function responseOnFinish(data) {
       const { arrowSize, minionSize, overlordSize } = settings.interface;
-      if (showRunButton) setRunButtonState(true);
       data.targetValue =
         type === 'overlord'
           ? globalMean
@@ -94,11 +122,13 @@ function createSection(
         minionSize,
         overlordSize
       );
-      let events = getInputs();
+      data.scoreAfter = data.scoreBefore + data.hit * (type === 'overlord' ? 50 : 1);
+      let events = inputs;
       if (events && events.length > settings.data.maxEvents) {
         events = events.slice(500);
       }
       data.events = events;
+      firstTrialOfWave = false;
     }
 
     // Creates the callback functions for the feedback trials
@@ -111,93 +141,119 @@ function createSection(
     function feedbackOnFinish(data) {
       const lastTrialData = jspsych.data.get().last(2).trials[0];
       data.hit = lastTrialData.hit;
-      if (data.hit) setScore(data.score + (type === 'overlord' ? 50 : 1));
-      setMinions(getMinions() + 1);
+      data.scoreAfter = data.scoreBefore + data.hit * (type === 'overlord' ? 50 : 1);
+      data.response = lastTrialData.response;
     }
 
-    // Creates a trial and a feedback respectively
-    let response = createSlider(
-      jspsych,
-      settings,
-      localMean,
-      type,
-      responseOnLoad,
-      responseOnFinish,
-      getScore,
-      getArrows,
-      setArrows,
+    const sharedData = {
       maxArrows,
-      levelNumber,
-      waveNumber,
       maxWaves,
-      showStatus,
-      getRunButtonState
-    );
-
-    let feedback = createSlider(
-      jspsych,
-      settings,
-      localMean,
-      'feedback',
-      feedbackOnLoad,
-      feedbackOnFinish,
-      getScore,
-      getArrows,
-      setArrows,
-      maxArrows,
+      maxTrials,
+      maxLevels,
       levelNumber,
-      waveNumber,
-      maxWaves,
-      showStatus,
-      getRunButtonState
-    );
-
-    // The timeline that loops forever as long as there are still arrows left
-    let loopedTimeline = {
-      timeline: [response, feedback],
-      conditional_function: () => getArrows() > 0 && getMinions() < maxMinions,
-      loop_function: () => getArrows() > 0 && getMinions() < maxMinions,
+      firstTrial: () => firstTrialOfWave,
+      localMean: () => localMean,
+      waveNumber: () => waveNumber,
+      trialNumber: () => trialNumber,
+      scoreBefore: score,
     };
 
-    if (!showWaveStimulus) {
-      return loopedTimeline;
+    const responseData = {
+      ...sharedData,
+      arrowsLeft: () => arrowsLeft,
+    };
+
+    const feedbackData = {
+      ...sharedData,
+      arrowsLeft: () => --arrowsLeft,
+    };
+
+    // Creates a trial and a feedback respectively
+    const response = createSlider(
+      jspsych,
+      settings,
+      type,
+      responseData,
+      responseOnLoad,
+      responseOnFinish,
+      showStatus ? setStatus : null,
+      () => showRunButton && !firstTrialOfWave
+    );
+
+    const feedback = createSlider(
+      jspsych,
+      settings,
+      'feedback',
+      feedbackData,
+      feedbackOnLoad,
+      feedbackOnFinish,
+      showStatus ? setStatus : null,
+      () => showRunButton && !firstTrialOfWave
+    );
+
+    const loop = [response, feedback];
+
+    function continueTrials() {
+      if (!maxTrials) {
+        return arrowsLeft > 0;
+      }
+      return arrowsLeft > 0 && trialNumber < maxTrials;
     }
 
-    // The trial for the prompt of each wave
-    let wavePrompt = {
+    // The timeline that loops forever as long as there are still arrows left
+    const loopedTrials = {
+      timeline: loop,
+      loop_function: continueTrials,
+      conditional_function: continueTrials,
+      on_timeline_start: () => {
+        trialNumber++;
+        score = calculateScore();
+      },
+    };
+
+    return loopedTrials;
+  }
+
+  // A section is just its prompt and maxWave number of waves
+  const trials = createTrials(type);
+  const continueWaves = () => arrowsLeft > 0 && waveNumber < maxWaves;
+
+  const waves = {
+    timeline: [trials],
+    conditional_function: continueWaves,
+    loop_function: continueWaves,
+    on_timeline_start: () => {
+      localMean = normalRandomInRange(globalMean, globalStd, 0, sliderMax);
+      waveNumber++;
+      firstTrialOfWave = true;
+    },
+  };
+
+  if (showWaveStimulus) {
+    const wavePrompt = {
       type: jsPsychHtmlKeyboardResponse,
-      stimulus: `Wave ${waveNumber + 1}!`,
+      stimulus: () => `Wave ${waveNumber}`,
       prompt: 'Press any key to continue...',
       trial_duration: waveStimulusDuration,
     };
 
-    return {
-      timeline: [wavePrompt, loopedTimeline],
-      conditional_function: () => getArrows() > 0,
-      timeline_on_load: () => {
-        window.removeEventListener('keypress', handleKeyPress);
-      },
-    };
+    waves.timeline.unshift(wavePrompt);
+  }
 
-    // A wave consists of a prompt for the wave and the response-feedback loop
+  if (!prompt) {
+    return waves;
   }
 
   // The trial for the prompt of each section
-  let sectionPrompt = {
+  const sectionPrompt = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: prompt,
     prompt: 'Press any key to continue...',
     trial_duration: sectionStimulusDuration,
   };
 
-  // A section is just its prompt and maxWave number of waves
-  let waves = Array.from({ length: maxWaves }, (_, i) => {
-    const localMean = normalRandomInRange(globalMean, grandStd, 0, sliderMax);
-    return createWave(localMean, localStd, type, i);
-  });
-
   return {
-    timeline: [sectionPrompt].concat(waves),
+    timeline: [sectionPrompt, waves],
   };
 }
 

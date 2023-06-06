@@ -5,7 +5,7 @@ Using a js file instead of a json file. Reasons:
 2. We might need some functions for dynamic prompts.
 */
 
-const instructions = (maxArrows, maxMinions, maxWaves) => {
+const instructions = (maxArrows, maxWaves, maxTrials) => {
   const instructions1 = [
     `<p>Welcome!</p>
       <p>Thank you for voluteering for this experiment.</p>`,
@@ -22,10 +22,12 @@ const instructions = (maxArrows, maxMinions, maxWaves) => {
   <p>Click "NEXT" to practice this!</p>`,
   ];
 
+  const waves = maxTrials ? ` of ${maxTrials}` : '';
+
   const instructions2 = [
     `<p>Great job! Looks like you got the hang of it!</p>
   <p>Now, a few more instructions.</p>`,
-    `<p>The minions always come in <span class="underline">waves of ${maxMinions}</span>, one after another.</p>
+    `<p>The minions always come in <span class="underline">waves${waves}</span>, one after another.</p>
   <p>Each minion will appear by itself, from the right side of the screen.</p>
   <p>Each minion in a wave might appear at a slightly different position, but remember: <span class="underline">all minions in a wave have positions close to each other</span>.</p>`,
     `<p>The better you learn the general location of each wave, the more likely you are to hit the minions in that wave!</p>
@@ -39,7 +41,9 @@ const instructions = (maxArrows, maxMinions, maxWaves) => {
   const instructions3 = [
     `<p>Great job! Looks like you got the hang of it!</p>
       <p>Now, a few more instructions.</p>`,
-    `<p>Remember, there are ${maxMinions} minions in each wave, but the overlord is sending <span class="underline">${maxWaves} different waves</span> at you!</p>
+    `<p>Remember, there are ${
+      maxTrials ? maxTrials : 'unlimited numbers of'
+    } minions in each wave, but the overlord is sending <span class="underline">${maxWaves} different waves</span> at you!</p>
   <p>Since all waves are created by the overlord, the position of each wave is related to the final position of the overlord.</p>`,
     `<p>Take advantage of this! You can <span class="underline">learn about the overlord's location</span> from each wave of minions it sends against you.</p>
   <p>You only have one chance to shoot an arrow at the overlord, at the end of the game: the better you have learned its location, the better the chance you will defeat it!</p>`,
@@ -64,9 +68,9 @@ const instructions = (maxArrows, maxMinions, maxWaves) => {
   return [instructions1, instructions2, instructions3, instructions4];
 };
 
-const prompts = (maxArrows, maxMinions, maxWaves) => {
+const prompts = (maxArrows, maxWaves, maxTrials) => {
   return {
-    instructions: instructions(maxArrows, maxMinions, maxWaves),
+    instructions: instructions(maxArrows, maxWaves, maxTrials),
     practice1:
       "You will now practice adjusting the archer's position and shooting an arrow at a minion.",
     practice2:
