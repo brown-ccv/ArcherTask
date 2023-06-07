@@ -85,7 +85,9 @@ const getFirestoreConfig = (studyID, docName) => {
     .get()
     .then((doc) => {
       if (doc.exists) {
-        return JSON.parse(doc.data().config);
+        const config = doc.data().config;
+        console.log(config);
+        return config;
       } else {
         console.log(`Document ${docName} does not exist`);
         return false;
@@ -102,17 +104,16 @@ const getFirestoreConfig = (studyID, docName) => {
  */
 const firestoreConfig = async (studyID, participantID) => {
   const pConfig = await getFirestoreConfig(studyID, participantID);
+
+  if (pConfig) return pConfig;
+
   const defaultConfig = await getFirestoreConfig(studyID, 'default');
-  if (pConfig) {
-    return pConfig;
-  } else if (defaultConfig) {
-    return defaultConfig;
-  } else {
-    return false;
-  }
+  if (defaultConfig) return defaultConfig;
+
+  return false;
 };
 
-const addConfigToFirebase = (participantID, studyID, startDate, config) => {
+const addConfigToFirebaseData = (participantID, studyID, startDate, config) => {
   console.log('Adding config to Firebase');
   db.collection(RESPONSE_COLLECTION_NAME)
     .doc(studyID)
@@ -133,7 +134,7 @@ async function addToFirebase(data) {
   const participantID = data.participant_id;
   const startDate = data.start_date;
 
-  if (data.type === 'minion' || data.type === 'overlord') {
+  if (data.type === 'minions' || data.type === 'overlord') {
     console.log(data);
     try {
       const experiment = getExperimentRef(studyID, participantID, startDate);
@@ -151,6 +152,6 @@ export {
   initParticipant,
   addToFirebase,
   firestoreConfig,
-  addConfigToFirebase,
+  addConfigToFirebaseData as addConfigToFirebase,
 };
 export default firebase;

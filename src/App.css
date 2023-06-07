@@ -79,6 +79,14 @@ body {
   padding: 25px;
 }
 
+#jspsych-content p {
+  margin: auto 2rem 2rem 2rem
+}
+
+p .underline {
+  text-decoration-line: underline;
+}
+
 .jspsych-content {
   height: 600px;
   text-align: center;
@@ -93,7 +101,11 @@ body {
 }
 
 #jspsych-html-keyboard-response-stimulus {
+  font-size: 1.5rem;
+  margin: 0 3rem;
+  line-height: 180%;
   padding-top: 100px;
+  margin-bottom: 3em;
 }
 
 #top-bar {

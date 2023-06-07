@@ -1,106 +1,59 @@
 import jsPsychInstructions from '@jspsych/plugin-instructions';
-import jsPsychKeyboardResponse from '@jspsych/plugin-html-keyboard-response';
+import jsPsychHtmlKeyboardResponse from '@jspsych/plugin-html-keyboard-response';
+import prompts from '../config/prompts';
 import { createSection } from './section';
 
 // Add your jsPsych timeline here.
 // Honeycomb will call this function for us after the subject logs in, and run the resulting timeline.
 // The instance of jsPsych passed in will include jsPsychOptions above, plus other options needed by Honeycomb.
-function buildTimeline(jspsych, config) {
-  const {
-    grand_mean,
-    grand_sd,
-    sd,
-    slider,
-    maxArrows,
-    waves,
-    showStatusMessage,
-    waveStimulus,
-    waveStimulusDuration,
-    sectionStimulusDuration,
-  } = config;
+function buildTimeline(jspsych, settings) {
+  const sectionConfigs = settings.sections;
+  const { maxArrows, maxMinions, maxWaves } = sectionConfigs.minions;
+  const allPrompts = prompts(maxArrows, maxMinions, maxWaves);
 
-  const max = slider.max;
-
-  const pages = [
-    `<p>Welcome!</p>
-  <p>Thank you for voluteering for this experiment.</p>`,
-    `<p>You are going to play a computer game.</p>
-  <p>Then next screens will show you instructions for what you have to do.</p>`,
-  ];
-
-  const instruction = {
-    type: jsPsychInstructions,
-    pages,
-    show_clickable_nav: true,
-  };
-
-  const createSectionCurried = (jspsych, type, maxArrows, maxWaves, sectionStimulus) => {
+  const createSectionCurried = (prompt, sectionConfig) => {
+    const { type, maxArrows, maxMinions, maxWaves, showStatus, showRunButton, showWaveStimulus } =
+      sectionConfig;
     return createSection(
       jspsych,
-      grand_mean,
-      grand_sd,
-      sd,
+      settings,
+      prompt,
       type,
-      max,
       maxArrows,
+      maxMinions,
       maxWaves,
-      showStatusMessage,
-      waveStimulus,
-      waveStimulusDuration,
-      sectionStimulus,
-      sectionStimulusDuration,
-      config
+      showStatus,
+      showRunButton,
+      showWaveStimulus
     );
   };
 
-  const practiceSection1 = (jspsych) => {
-    return createSectionCurried(
-      jspsych,
-      'practice1',
-      10,
-      3,
-      'You will now practice shooting at several minions in a wave, and adjusting your aim'
-    );
-  };
+  const instructionSections = allPrompts.instructions.map((pages) => {
+    return {
+      type: jsPsychInstructions,
+      pages,
+      show_clickable_nav: true,
+    };
+  });
 
-  const practiceSection2 = (jspsych) => {
-    return createSectionCurried(
-      jspsych,
-      'practice2',
-      10,
-      3,
-      `<p>To end the current wave of minions by running away,<br />click the RUN button at the top left of the screen.</p>
-  <p>This will immediately skip the rest of the minions, and advance you to a new wave.</p>`
-    );
-  };
+  const allSections = [1, 2, 3, 4]
+    .map((d) => 'practice' + d)
+    .concat(['minions', 'overlord'])
+    .map((name) => createSectionCurried(allPrompts[name], sectionConfigs[name]));
 
-  const minionSection = (jspsych) => {
-    return createSectionCurried(
-      jspsych,
-      'minion',
-      maxArrows,
-      waves,
-      'You are now ready to start! You will face ten waves of minions, followed by the overlord.'
-    );
-  };
-
-  const overlordSection = (jspsych) => {
-    return createSectionCurried(jspsych, 'overlord', 1, 1, 'The Overlord is coming!');
-  };
+  const timeline = [0, 1, 2, 3]
+    .map((i) => [instructionSections[i], allSections[i]])
+    .flat()
+    .concat(allSections.slice(4, 6));
 
   const outro = {
-    type: jsPsychKeyboardResponse,
-    stimulus: 'Thank you for participating in this experiment!',
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: allPrompts.outro,
   };
 
-  return [
-    instruction,
-    practiceSection1(jspsych),
-    practiceSection2(jspsych),
-    minionSection(jspsych),
-    overlordSection(jspsych),
-    outro,
-  ];
+  timeline.push(outro);
+
+  return timeline;
 }
 
 // Honeycomb, please include these options, and please get the timeline from this function.

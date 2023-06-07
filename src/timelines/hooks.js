@@ -1,7 +1,7 @@
-const arrowsState = (n_arrows) => {
-  let arrows = n_arrows;
+const numberState = (n) => {
+  let n_internal = n;
 
-  return [() => arrows, (n) => (arrows = n)];
+  return [() => n_internal, (n) => (n_internal = n)];
 };
 
 const runButtonState = (state) => {
@@ -16,4 +16,4 @@ const inputsState = (initState) => {
   return [() => state, (e) => state.push(e), () => (state = [])];
 };
 
-export { arrowsState, runButtonState, inputsState };
+export { numberState, runButtonState, inputsState };

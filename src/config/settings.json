@@ -1,17 +1,4 @@
 {
-  "grand_mean": 100,
-  "grand_sd": 20,
-  "sd": 5,
-  "maxArrows": 200,
-  "waves": 30,
-  "showStatusMessage": true,
-  "sectionStimulusDuration": 5000,
-  "waveStimulusDuration": 2000,
-  "slider": {
-    "min": 0,
-    "max": 200,
-    "start": 100
-  },
   "animation": {
     "arrowDuration": 2000,
     "explosionDuration": 1000,
@@ -25,5 +12,69 @@
     "arrowSize": 3,
     "minionSize": 13,
     "overlordSize": 17
+  },
+  "common": {
+    "grand_mean": 100,
+    "grand_sd": 20,
+    "sd": 5,
+    "max": 200,
+    "sectionStimulusDuration": 5000,
+    "waveStimulusDuration": 2000
+  },
+  "sections": {
+    "practice1": {
+      "type": "practice1",
+      "maxArrows": 1,
+      "maxMinions": 1,
+      "maxWaves": 1,
+      "showStatus": false,
+      "showRunButton": false,
+      "showWaveStimulus": false
+    },
+    "practice2": {
+      "type": "practice2",
+      "maxArrows": 5,
+      "maxMinions": 5,
+      "maxWaves": 1,
+      "showStatus": true,
+      "showRunButton": false,
+      "showWaveStimulus": false
+    },
+    "practice3": {
+      "type": "practice3",
+      "maxArrows": 10,
+      "maxMinions": 10,
+      "maxWaves": 1,
+      "showStatus": true,
+      "showRunButton": true,
+      "showWaveStimulus": false
+    },
+    "practice4": {
+      "type": "practice4",
+      "maxArrows": 10,
+      "maxMinions": 10,
+      "maxWaves": 2,
+      "showStatus": true,
+      "showRunButton": true,
+      "showWaveStimulus": true
+    },
+    "minions": {
+      "type": "minions",
+      "maxArrows": 100,
+      "maxMinions": 30,
+      "maxWaves": 10,
+      "showStatus": true,
+      "showRunButton": true,
+      "showWaveStimulus": true
+    },
+    "overlord": {
+      "type": "overlord",
+      "maxArrows": 1,
+      "maxMinions": 1,
+      "maxWaves": 1,
+      "showStatus": false,
+      "showRunButton": false,
+      "showWaveStimulus": false
+    }
   }
 }
