@@ -105,9 +105,9 @@ function JsPsychExperiment({
     <div id='jspsych-container' className='rounded-5 bg-white mt-5 shadow-sm'>
       <div id='jspsych-main'></div>
       <div id='arrow' style={{ height: interfaceConfig.arrowSize + 'px' }}></div>
-      <DivWithImg id={'minion'} size={interfaceConfig.minionSize} img={minionImg} />
-      <DivWithImg id={'overlord'} size={interfaceConfig.overlordSize} img={overlordImg} />
-      <DivWithImg id={'explosion'} size={interfaceConfig.minionSize} img={explosionGif} />
+      <DivWithImg id='minion' size={interfaceConfig.minionSize} img={minionImg} />
+      <DivWithImg id='overlord' size={interfaceConfig.overlordSize} img={overlordImg} />
+      <DivWithImg id='explosion' size={interfaceConfig.minionSize} img={explosionGif} />
     </div>
   );
 }
