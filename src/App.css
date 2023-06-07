@@ -179,7 +179,6 @@ body {
   left: 125px;
   background: black;
   width: 10px;
-  height: 3px;
 }
 
 #minion {
@@ -187,13 +186,9 @@ body {
   position: absolute;
   z-index: 102;
   left: 1000px;
-  width: 13px;
-  height: 13px;
 }
 
 #minion img {
-  width: 13px;
-  height: 13px;
   filter: invert(1);
 }
 
@@ -202,13 +197,9 @@ body {
   position: absolute;
   z-index: 102;
   left: 1000px;
-  width: 17px;
-  height: 17px;
 }
 
 #overlord img {
-  width: 17px;
-  height: 17px;
   filter: invert(1);
 }
 
