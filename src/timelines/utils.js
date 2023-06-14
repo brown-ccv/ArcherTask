@@ -101,6 +101,12 @@ function normalRandomInRange(mean, stdev, min, max) {
   return val;
 }
 
+const shuffleArray = (arr) =>
+  arr
+    .map((value) => ({ value, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ value }) => value);
+
 export {
   sliderToPixel as calculateByValue,
   getResponseTop,
@@ -110,4 +116,5 @@ export {
   handleKeyPress,
   getArcher,
   normalRandomInRange,
+  shuffleArray,
 };
