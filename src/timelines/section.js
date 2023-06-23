@@ -193,18 +193,18 @@ function createSection(
 
     const loop = [response, feedback];
 
-    function continueTrials() {
-      if (!maxTrials) {
-        return arrowsLeft > 0;
-      }
-      return arrowsLeft > 0 && trialNumber < maxTrials;
-    }
+    // function continueTrials() {
+    //   if (!maxTrials) {
+    //     return arrowsLeft > 0;
+    //   }
+    //   return arrowsLeft > 0 && trialNumber < maxTrials;
+    // }
 
     // The timeline that loops forever as long as there are still arrows left
     const loopedTrials = {
       timeline: loop,
-      loop_function: continueTrials,
-      conditional_function: continueTrials,
+      // loop_function: continueTrials,
+      // conditional_function: continueTrials,
       on_timeline_start: () => {
         trialNumber++;
         score = calculateScore();
@@ -216,12 +216,12 @@ function createSection(
 
   // A section is just its prompt and maxWave number of waves
   const trials = createTrials(type);
-  const continueWaves = () => arrowsLeft > 0 && waveNumber < maxWaves;
+  // const continueWaves = () => arrowsLeft > 0 && waveNumber < maxWaves;
 
   const waves = {
     timeline: [trials],
-    conditional_function: continueWaves,
-    loop_function: continueWaves,
+    // conditional_function: continueWaves,
+    // loop_function: continueWaves,
     on_timeline_start: () => {
       localMean = normalRandomInRange(globalMean, globalStd, 0, sliderMax);
       waveNumber++;
