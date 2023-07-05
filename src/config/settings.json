@@ -10,7 +10,7 @@
   },
   "interface": {
     "arrowSize": 3,
-    "minionSize": 13,
+    "minionSize": 29,
     "overlordSize": 17
   },
   "common": {
