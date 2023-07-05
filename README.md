@@ -61,7 +61,7 @@ After creating participants and studies, you may also need to add configurations
 npm run firebase:upload study_id [participant_id] /path/to/config.json
 ```
 
-If `participant_id` is omitted, a default config will be added to the study shared by all participants, so if Honeycomb cannot find `participant_id`, it will use the default for the study.
+You can set `participant_id` to `default` to add a default config to the study shared by all participants. If Honeycomb cannot find `participant_id`, it will use the default for the study.
 
 Once this is all done, you will be able to test your code with firebase. You can start a new branch, and submit a PR from that branch. Github will automatically run the continuous integration (CI) workflow and generate a temporary test link for the PR.
 
