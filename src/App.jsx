@@ -75,7 +75,7 @@ function App() {
         if (config.USE_FIREBASE && pID) {
           setMethod('firebase');
           // TODO 145: Function signature
-          handleLogin('prolific', pID);
+          handleLogin(pID, "prolific");
         } else {
           // Error - Prolific must be used with Firebase
           setIsError(true);
