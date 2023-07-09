@@ -10,8 +10,8 @@
   },
   "interface": {
     "arrowSize": 3,
-    "minionSize": 13,
-    "overlordSize": 17
+    "minionSize": 17,
+    "overlordSize": 21
   },
   "common": {
     "globalMeans": [50, 100, 150],

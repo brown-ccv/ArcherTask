@@ -135,7 +135,6 @@ async function addToFirebase(data) {
   const startDate = data.start_date;
 
   if (data.type === 'minions' || data.type === 'overlord') {
-    console.log(data);
     try {
       const experiment = getExperimentRef(studyID, participantID, startDate);
       await experiment.collection('trials').add(data);

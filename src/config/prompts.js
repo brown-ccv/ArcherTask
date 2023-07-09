@@ -17,7 +17,7 @@ const instructions = (maxArrows, maxWaves, maxTrials, maxLevels) => {
   <p>You must face ${maxWaves} waves of minions first, before you reach the overlord.</p>`,
     `<p>You have your trusty bow and arrows to defend yourself from the minions.</p>
   <p>All you have to do is aim your bow where you think the next minion will appear, and then SPACE to shoot the arrow.</p>`,
-    `<p>You can adjust the position of the archer by dragging it up and down the screen with the mouse. Just <span class="underline">hold down</span> the LEFT MOUSE BUTTON, and <span class="underline">drag it to the desired position</span>.</p>
+    `<p>You can adjust the position of the archer by dragging it up and down the screen with the mouse. Just <span class="underline">hold down</span> the LEFT MOUSE BUTTON, and <span class="underline">drag it to the desired position</span>. You can also use keyboard arrow keys "UP" and "DOWN" for finer adjustments.</p>
   <p>Once you have set the position, press the "SPACE" key to summon the next minion in a wave, and shoot at it.</p>
   <p>Click "NEXT" to practice this!</p>`,
   ];
