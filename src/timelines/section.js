@@ -155,7 +155,7 @@ function createSection(
       localMean: () => localMean,
       waveNumber: () => waveNumber,
       trialNumber: () => trialNumber,
-      scoreBefore: score,
+      scoreBefore: () => score,
     };
 
     const responseData = {
