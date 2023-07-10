@@ -10,23 +10,9 @@ function endWave(jspsych) {
 }
 
 // Creates a htmlSliderResponse trial
-function createSlider(
-  jspsych,
-  mean,
-  sd,
-  max,
-  type,
-  onLoad,
-  onFinish,
-  getArrows,
-  setArrows,
-  maxArrows,
-  waveNumber,
-  maxWaves,
-  showStatus,
-  showRunButton,
-  settings
-) {
+function createSlider(jspsych, settings, type, data, onLoad, onFinish, status, showRunButton) {
+  const { localStd, sliderMax } = settings.common;
+
   let runPressed = false;
 
   // Hanlder function for the run button
@@ -38,6 +24,7 @@ function createSlider(
       anim.reset();
     });
     endWave(jspsych);
+    runPressed = false;
   }
 
   // The stimulus repurposed for displaying the
@@ -66,7 +53,7 @@ function createSlider(
     }
 
     // Determines whether a status message should be shown.
-    if (showStatus) setStatusMessage();
+    if (status) status();
 
     let archer = getArcher();
 
@@ -95,19 +82,8 @@ function createSlider(
     // Resets the animations
     animationReset(jspsych, data, settings);
 
-    // For feedback types, end the current wave after a hit
-    // Also ends the wave if run button is pressed
-    if (type === 'feedback' && data.hit) endWave(jspsych);
+    // For feedback types, end the wave if run button is pressed
     if (data.runPressed) endWave(jspsych);
-  }
-
-  // Sets the status message given current state
-  function setStatusMessage() {
-    const arrowsLeft = getArrows();
-
-    let status = document.getElementById('status');
-    status.innerHTML = `Arrows left: ${arrowsLeft}/${maxArrows}<br />
-      Current wave: ${waveNumber + 1}/${maxWaves}`;
   }
 
   return {
@@ -116,32 +92,18 @@ function createSlider(
     slider_start: () => {
       // If this is feedback, simply return the last trial value
       // which is guaranteed to be a response type
-      if (type === 'feedback') {
+      if (type === 'feedback' || !data.firstTrial()) {
         return jspsych.data.getLastTrialData().trials[0].response;
       }
 
-      // Reset slider position only at the beginning of a trial
-      const filteredData = jspsych.data.get().filter({ type, waveNumber });
-      if (filteredData.count() > 0) {
-        return filteredData.last(1).trials[0].response;
-      } else {
-        return Math.round(max / 2);
-      }
+      // Reset slider position only at the beginning of a wave
+      return Math.round(sliderMax / 2);
     },
-    max,
+    max: sliderMax,
     data: {
-      mean,
-      sd,
+      ...data,
+      localStd,
       type,
-      arrowsLeft: () => {
-        if (type === 'feedback') {
-          setArrows(getArrows() - 1);
-        }
-        return getArrows();
-      },
-      maxArrows,
-      waveNumber,
-      maxWave: maxWaves,
     },
     on_finish: trialOnFinish,
     on_load: trialOnLoad,

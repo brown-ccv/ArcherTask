@@ -2,33 +2,44 @@ import jsPsychInstructions from '@jspsych/plugin-instructions';
 import jsPsychHtmlKeyboardResponse from '@jspsych/plugin-html-keyboard-response';
 import prompts from '../config/prompts';
 import { createSection } from './section';
+import { createLevels } from './level';
+import { normalRandomInRange } from './utils';
 
 // Add your jsPsych timeline here.
 // Honeycomb will call this function for us after the subject logs in, and run the resulting timeline.
 // The instance of jsPsych passed in will include jsPsychOptions above, plus other options needed by Honeycomb.
 function buildTimeline(jspsych, settings) {
   const sectionConfigs = settings.sections;
-  const { maxArrows, maxMinions, maxWaves } = sectionConfigs.minions;
-  const allPrompts = prompts(maxArrows, maxMinions, maxWaves);
+  const { globalMeans, globalStd, sliderMax } = settings.common;
+  const { maxArrows, maxWaves, maxTrials } = sectionConfigs.minions;
+  const allPrompts = prompts(maxArrows, maxWaves, maxTrials, globalMeans.length);
+  const globalMeanForPractice = normalRandomInRange(
+    Math.round(sliderMax / 2),
+    globalStd,
+    0,
+    sliderMax
+  );
 
-  const createSectionCurried = (prompt, sectionConfig) => {
-    const { type, maxArrows, maxMinions, maxWaves, showStatus, showRunButton, showWaveStimulus } =
-      sectionConfig;
-    return createSection(
+  const createSectionCurried = (
+    prompt,
+    { type, maxArrows, maxWaves, maxTrials, showStatus, showRunButton, showWaveStimulus }
+  ) =>
+    createSection(
       jspsych,
       settings,
-      prompt,
       type,
+      prompt,
+      globalMeanForPractice,
+      0,
       maxArrows,
-      maxMinions,
       maxWaves,
+      maxTrials,
       showStatus,
       showRunButton,
       showWaveStimulus
     );
-  };
 
-  const instructionSections = allPrompts.instructions.map((pages) => {
+  const instructionTrials = allPrompts.instructions.map((pages) => {
     return {
       type: jsPsychInstructions,
       pages,
@@ -36,15 +47,24 @@ function buildTimeline(jspsych, settings) {
     };
   });
 
-  const allSections = [1, 2, 3, 4]
+  const practiceSections = [1, 2, 3, 4]
     .map((d) => 'practice' + d)
-    .concat(['minions', 'overlord'])
     .map((name) => createSectionCurried(allPrompts[name], sectionConfigs[name]));
 
+  const levels = createLevels(
+    jspsych,
+    settings,
+    globalMeans,
+    allPrompts.minions,
+    allPrompts.overlord,
+    sectionConfigs.minions,
+    sectionConfigs.overlord
+  );
+
   const timeline = [0, 1, 2, 3]
-    .map((i) => [instructionSections[i], allSections[i]])
+    .map((i) => [instructionTrials[i], practiceSections[i]])
     .flat()
-    .concat(allSections.slice(4, 6));
+    .concat(levels);
 
   const outro = {
     type: jsPsychHtmlKeyboardResponse,
