@@ -11,7 +11,7 @@ if (studyID === undefined || participantID === undefined) {
   // Note that throwing an Error will halt execution of this script
   throw Error(
     'studyID and participantID not given\n' +
-      'Usage: npm run firebase:upload -- studyID participantI\n'
+      'Usage: npm run firebase:upload -- studyID participantID\n'
   );
 } else {
   console.log(`Looking for study <${studyID}>, participant <${participantID}>...\n`);
@@ -42,7 +42,7 @@ const uploadConfigToFirebase = (participantID, studyID, config) => {
     .doc(studyID)
     .collection('config')
     .doc(participantID)
-    .update({ config: config });
+    .set({ config: config });
 };
 
 uploadConfigToFirebase(participantID, studyID, config);

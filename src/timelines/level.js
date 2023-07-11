@@ -73,7 +73,14 @@ function createLevels(
   let levels = shuffledMeans.map((globalMean, levelNumber) => {
     const levelPrompt = {
       type: jsPsychHtmlKeyboardResponse,
-      stimulus: `Level ${levelNumber + 1}!`,
+      stimulus: () => {
+        const level = levelNumber + 1;
+        let instruction = `<p>Level ${level}!</p>`;
+        if (level != 1) {
+          instruction += `<p>Another overlord appears at a new location!</p>`;
+        }
+        return instruction;
+      },
       prompt: 'Press any key to continue...',
       trial_duration: settings.common.levelStimulusDuration,
     };
