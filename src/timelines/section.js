@@ -29,12 +29,41 @@ function createSection(
   const { globalMeans, globalStd, sliderMax, sectionStimulusDuration, waveStimulusDuration } =
     settings.common;
 
-  let arrowsLeft = maxArrows;
+  function calculateScore() {
+    let score;
+
+    if (type === 'minion' || type === 'overlord') {
+      score = jspsych.data.get().filter({ type: 'minion', hit: true }).count();
+      score += jspsych.data.get().filter({ type: 'overlord', hit: true }).count() * 50;
+
+      return score;
+    }
+
+    return jspsych.data.get().filter({ type, hit: true }).count();
+  }
+
+  let score = calculateScore();
+  let arrowsLeft;
+
+  // arrowsLeft should carry over in game
+  if (type === 'minion' || type === 'overlord') {
+    let prevTrials = jspsych.data
+      .get()
+      .filterCustom((data) => data.type === 'minion' || data.type === 'overlord');
+
+    if (prevTrials.count() > 0) {
+      arrowsLeft = prevTrials.last(1).trials[0].arrowsLeft;
+    } else {
+      arrowsLeft = maxArrows;
+    }
+  } else {
+    arrowsLeft = maxArrows;
+  }
+
   let localMean = 0;
   let waveNumber = 0;
   let maxLevels = globalMeans.length;
   let firstTrialOfWave = false;
-  let score = 0;
 
   function createTrials(type) {
     // The state of whether the run button should be shown is shared in each wave
@@ -72,17 +101,6 @@ function createSection(
       let archer = getArcher();
 
       watchedEvents.forEach((d) => archer.removeEventListener(d, logInputs));
-    }
-
-    function calculateScore() {
-      if (type === 'minion' || type === 'overlord') {
-        score = jspsych.data.get().filter({ type: 'minion', hit: true }).count();
-        score += jspsych.data.get().filter({ type: 'overlord', hit: true }).count() * 50;
-
-        return score;
-      }
-
-      return jspsych.data.get().filter({ type, hit: true }).count();
     }
 
     // Sets the status message given current state
