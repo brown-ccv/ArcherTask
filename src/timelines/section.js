@@ -75,11 +75,14 @@ function createSection(
     }
 
     function calculateScore() {
-      let score = jspsych.data.get().filter({ type, hit: true }).count();
       if (type === 'minion' || type === 'overlord') {
+        score = jspsych.data.get().filter({ type: 'minion', hit: true }).count();
         score += jspsych.data.get().filter({ type: 'overlord', hit: true }).count() * 50;
+
+        return score;
       }
-      return score;
+
+      return jspsych.data.get().filter({ type, hit: true }).count();
     }
 
     // Sets the status message given current state
