@@ -29,37 +29,26 @@ function createSection(
   const { globalMeans, globalStd, sliderMax, sectionStimulusDuration, waveStimulusDuration } =
     settings.common;
 
-  function calculateScore() {
+  function calculateScore(isFeedback) {
+    const data = jspsych.data.get();
+
+    if (isFeedback) {
+      return data.last(1).trials[0].scoreBefore;
+    }
+
     let score;
 
-    if (type === 'minion' || type === 'overlord') {
-      score = jspsych.data.get().filter({ type: 'minion', hit: true }).count();
-      score += jspsych.data.get().filter({ type: 'overlord', hit: true }).count() * 50;
-
-      return score;
-    }
-
-    return jspsych.data.get().filter({ type, hit: true }).count();
-  }
-
-  let score = calculateScore();
-  let arrowsLeft;
-
-  // arrowsLeft should carry over in game
-  if (type === 'minion' || type === 'overlord') {
-    let prevTrials = jspsych.data
-      .get()
-      .filterCustom((data) => data.type === 'minion' || data.type === 'overlord');
-
-    if (prevTrials.count() > 0) {
-      arrowsLeft = prevTrials.last(1).trials[0].arrowsLeft;
+    if (type === 'minions' || type === 'overlord') {
+      score = data.filter({ type: 'minions', hit: true }).count();
+      score += data.filter({ type: 'overlord', hit: true }).count() * 50;
     } else {
-      arrowsLeft = maxArrows;
+      score = data.filter({ type, hit: true }).count();
     }
-  } else {
-    arrowsLeft = maxArrows;
+
+    return score;
   }
 
+  let arrowsLeft = maxArrows;
   let localMean = 0;
   let waveNumber = 0;
   let maxLevels = globalMeans.length;
@@ -104,10 +93,11 @@ function createSection(
     }
 
     // Sets the status message given current state
-    function setStatus() {
+    function setStatus(isFeedback) {
       let status = document.getElementById('status');
       let statusMsg =
-        `Score: ${score}&nbsp;&nbsp;&nbsp;Arrows: ${arrowsLeft}/${maxArrows}` + '<br />';
+        `Score: ${calculateScore(isFeedback)}&nbsp;&nbsp;&nbsp;Arrows: ${arrowsLeft}/${maxArrows}` +
+        '<br />';
       if (maxTrials) {
         let trialNumber = jspsych.data.getLastTrialData().trials[0].trialNumber;
         if (!trialNumber || (type !== 'feedback' && trialNumber != maxTrials)) {
@@ -162,7 +152,7 @@ function createSection(
     function feedbackOnFinish(data) {
       const lastTrialData = jspsych.data.get().last(2).trials[0];
       data.hit = lastTrialData.hit;
-      data.scoreAfter = data.scoreBefore + data.hit * (type === 'overlord' ? 50 : 1);
+      data.scoreAfter = lastTrialData.scoreAfter;
       data.response = lastTrialData.response;
     }
 
@@ -176,16 +166,17 @@ function createSection(
       localMean: () => localMean,
       waveNumber: () => waveNumber,
       trialNumber: () => trialNumber,
-      scoreBefore: () => score,
     };
 
     const responseData = {
       ...sharedData,
+      scoreBefore: () => calculateScore(false),
       arrowsLeft: () => arrowsLeft,
     };
 
     const feedbackData = {
       ...sharedData,
+      scoreBefore: () => calculateScore(true),
       arrowsLeft: () => --arrowsLeft,
     };
 
@@ -197,7 +188,7 @@ function createSection(
       responseData,
       responseOnLoad,
       responseOnFinish,
-      showStatus ? setStatus : null,
+      showStatus ? () => setStatus(false) : null,
       () => showRunButton && !firstTrialOfWave
     );
 
@@ -208,7 +199,7 @@ function createSection(
       feedbackData,
       feedbackOnLoad,
       feedbackOnFinish,
-      showStatus ? setStatus : null,
+      showStatus ? () => setStatus(true) : null,
       () => showRunButton && !firstTrialOfWave
     );
 
@@ -228,7 +219,6 @@ function createSection(
       conditional_function: continueTrials,
       on_timeline_start: () => {
         trialNumber++;
-        score = calculateScore();
       },
     };
 
