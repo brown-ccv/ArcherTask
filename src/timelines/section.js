@@ -1,6 +1,6 @@
 import createSlider from './slider';
 import jsPsychHtmlKeyboardResponse from '@jspsych/plugin-html-keyboard-response';
-import { isHit, getArcher, normalRandomInRange } from './utils';
+import { calculateByValue, isHit, getArcher, normalRandomInRange } from './utils';
 import { playAnimation } from './animations';
 
 function createSection(
@@ -125,6 +125,8 @@ function createSection(
         type === 'overlord'
           ? globalMean
           : normalRandomInRange(data.localMean, data.localStd, 0, sliderMax);
+      data.archer_pos = calculateByValue(data.response);
+      data.target_pos = calculateByValue(data.targetValue);
       data.hit = isHit(
         data.response,
         data.targetValue,
