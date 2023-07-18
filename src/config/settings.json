@@ -61,8 +61,8 @@
     },
     "minions": {
       "type": "minions",
-      "maxArrows": 100,
-      "maxWaves": 30,
+      "maxArrows": 50,
+      "maxWaves": 5,
       "maxTrials": 0,
       "showStatus": true,
       "showRunButton": true,

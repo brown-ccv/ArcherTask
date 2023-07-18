@@ -38,11 +38,37 @@ try {
 
 const uploadConfigToFirebase = (participantID, studyID, config) => {
   console.log('Adding config to Firebase');
-  db.collection(REGISTERED_COLLECTION_NAME)
-    .doc(studyID)
-    .collection('config')
-    .doc(participantID)
-    .set({ config: config });
+
+  let studyDoc;
+
+  try {
+    studyDoc = db.collection(REGISTERED_COLLECTION_NAME).doc(studyID);
+  } catch (error) {
+    throw new Error(`${studyID} does not exist in firebase. You must create the study first.`);
+  }
+
+  let registeredParticipants;
+
+  try {
+    registeredParticipants = studyDoc.get('registered_participants');
+  } catch (error) {
+    console.log(`"registered_participants" field does not exist in firebase.`);
+    console.log('Creating one...');
+    studyDoc.set({ registered_participants: [] });
+    registeredParticipants = studyDoc.get('registered_participants');
+  }
+
+  registeredParticipants.then((result) => {
+    let participants = result.data().registered_participants;
+    if (!participants.includes(participantID)) {
+      console.log(`${participantID} does not "registered_participants" field.`);
+      console.log(`Adding ${participantID} to the field...`);
+      participants.push(participantID);
+      studyDoc.set({ registered_participants: participants });
+    }
+  });
+
+  studyDoc.collection('config').doc(participantID).set({ config: config });
 };
 
 uploadConfigToFirebase(participantID, studyID, config);

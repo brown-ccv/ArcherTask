@@ -1,6 +1,6 @@
 import createSlider from './slider';
 import jsPsychHtmlKeyboardResponse from '@jspsych/plugin-html-keyboard-response';
-import { isHit, getArcher, normalRandomInRange } from './utils';
+import { calculateByValue, isHit, getArcher, normalRandomInRange } from './utils';
 import { playAnimation } from './animations';
 
 function createSection(
@@ -29,12 +29,30 @@ function createSection(
   const { globalMeans, globalStd, sliderMax, sectionStimulusDuration, waveStimulusDuration } =
     settings.common;
 
+  function calculateScore(isFeedback) {
+    const data = jspsych.data.get();
+
+    if (isFeedback) {
+      return data.last(1).trials[0].scoreBefore;
+    }
+
+    let score;
+
+    if (type === 'minions' || type === 'overlord') {
+      score = data.filter({ type: 'minions', hit: true }).count();
+      score += data.filter({ type: 'overlord', hit: true }).count() * 50;
+    } else {
+      score = data.filter({ type, hit: true }).count();
+    }
+
+    return score;
+  }
+
   let arrowsLeft = maxArrows;
   let localMean = 0;
   let waveNumber = 0;
   let maxLevels = globalMeans.length;
   let firstTrialOfWave = false;
-  let score = 0;
 
   function createTrials(type) {
     // The state of whether the run button should be shown is shared in each wave
@@ -74,19 +92,12 @@ function createSection(
       watchedEvents.forEach((d) => archer.removeEventListener(d, logInputs));
     }
 
-    function calculateScore() {
-      let score = jspsych.data.get().filter({ type, hit: true }).count();
-      if (type === 'minion' || type === 'overlord') {
-        score += jspsych.data.get().filter({ type: 'overlord', hit: true }).count() * 50;
-      }
-      return score;
-    }
-
     // Sets the status message given current state
-    function setStatus() {
+    function setStatus(isFeedback) {
       let status = document.getElementById('status');
       let statusMsg =
-        `Score: ${score}&nbsp;&nbsp;&nbsp;Arrows: ${arrowsLeft}/${maxArrows}` + '<br />';
+        `Score: ${calculateScore(isFeedback)}&nbsp;&nbsp;&nbsp;Arrows: ${arrowsLeft}/${maxArrows}` +
+        '<br />';
       if (maxTrials) {
         let trialNumber = jspsych.data.getLastTrialData().trials[0].trialNumber;
         if (!trialNumber || (type !== 'feedback' && trialNumber != maxTrials)) {
@@ -114,6 +125,8 @@ function createSection(
         type === 'overlord'
           ? globalMean
           : normalRandomInRange(data.localMean, data.localStd, 0, sliderMax);
+      data.archer_pos = calculateByValue(data.response);
+      data.target_pos = calculateByValue(data.targetValue);
       data.hit = isHit(
         data.response,
         data.targetValue,
@@ -141,7 +154,7 @@ function createSection(
     function feedbackOnFinish(data) {
       const lastTrialData = jspsych.data.get().last(2).trials[0];
       data.hit = lastTrialData.hit;
-      data.scoreAfter = data.scoreBefore + data.hit * (type === 'overlord' ? 50 : 1);
+      data.scoreAfter = lastTrialData.scoreAfter;
       data.response = lastTrialData.response;
     }
 
@@ -155,16 +168,17 @@ function createSection(
       localMean: () => localMean,
       waveNumber: () => waveNumber,
       trialNumber: () => trialNumber,
-      scoreBefore: () => score,
     };
 
     const responseData = {
       ...sharedData,
+      scoreBefore: () => calculateScore(false),
       arrowsLeft: () => arrowsLeft,
     };
 
     const feedbackData = {
       ...sharedData,
+      scoreBefore: () => calculateScore(true),
       arrowsLeft: () => --arrowsLeft,
     };
 
@@ -176,7 +190,7 @@ function createSection(
       responseData,
       responseOnLoad,
       responseOnFinish,
-      showStatus ? setStatus : null,
+      showStatus ? () => setStatus(false) : null,
       () => showRunButton && !firstTrialOfWave
     );
 
@@ -187,7 +201,7 @@ function createSection(
       feedbackData,
       feedbackOnLoad,
       feedbackOnFinish,
-      showStatus ? setStatus : null,
+      showStatus ? () => setStatus(true) : null,
       () => showRunButton && !firstTrialOfWave
     );
 
@@ -207,7 +221,6 @@ function createSection(
       conditional_function: continueTrials,
       on_timeline_start: () => {
         trialNumber++;
-        score = calculateScore();
       },
     };
 
