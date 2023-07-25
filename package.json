@@ -13,7 +13,6 @@
   "homepage": ".",
   "repository": "https://github.com/brown-ccv/honeycomb",
   "dependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@brown-ccv/behavioral-task-trials": "^2.0.0",
     "@fortawesome/fontawesome-free": "^5.9.0",
     "@jspsych/plugin-html-button-response": "^1.1.1",
@@ -27,6 +26,7 @@
     "@types/react-dom": "^18.2.1",
     "animejs": "^3.2.1",
     "bootstrap": "^5.2.0-beta1",
+    "commander": "^11.0.0",
     "electron-log": "^4.4.8",
     "electron-squirrel-startup": "^1.0.0",
     "event-marker": "git+https://github.com/brown-ccv/event-marker.git",
@@ -45,6 +45,7 @@
     "wait-on": "^7.0.1"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@electron-forge/cli": "^6.0.0-beta.64",
     "@electron-forge/maker-deb": "^6.0.0-beta.64",
     "@electron-forge/maker-dmg": "^6.0.0-beta.64",
@@ -80,7 +81,9 @@
     "firebase:emulators:start": "firebase emulators:start --import emulator_data",
     "firebase:emulators:save": "firebase emulators:export emulator_data",
     "firebase:download": "dotenv -e env/.env.firebase-download node download-response-data.js",
+    "firebase:download:help": "node download-response-data.js --help",
     "firebase:upload": "dotenv -e env/.env.firebase-download node upload-config-to-firebase.js",
+    "firebase:upload:help": "node upload-config-to-firebase.js --help",
     "start": "cross-env BROWSER=\"none\" NODE_PATH=\"./src\" IMAGE_INLINE_SIZE_LIMIT=0 react-scripts start",
     "start:browser": "cross-env IMAGE_INLINE_SIZE_LIMIT=0 react-scripts start",
     "dev": "concurrently -k npm:start npm:electron-dev",
