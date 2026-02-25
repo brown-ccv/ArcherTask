@@ -1,5 +1,10 @@
 # How to use ArcherTask
 
+![Static Badge](https://img.shields.io/badge/ARCHIVED-red)
+
+**This repo was archived February 2026, due to inactivity.**
+---
+
 Below is a tutorial that walks you through setting up ArcherTask for local development and publishing to firebase. All steps are specific to this repo. If you have questions about Honeycomb in general, [the Honeycomb documentation](https://brown-ccv.github.io/honeycomb-docs/) provides a more comprehensive overview on how to use Honeycomb.
 
 ## Minimum requirements
